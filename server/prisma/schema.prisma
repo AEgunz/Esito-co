@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PRINTING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  description   String?       @db.Text
+  image         String?       @db.Text
+  subCategories SubCategory[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model SubCategory {
+  id              String          @id @default(uuid())
+  name            String
+  description     String?         @db.Text
+  categoryId      String
+  category        Category        @relation(fields: [categoryId], references: [id])
+  childCategories ChildCategory[]
+  products        Product[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([name, categoryId])
+}
+
+model ChildCategory {
+  id            String      @id @default(uuid())
+  name          String
+  subCategoryId String
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id])
+  products      Product[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([name, subCategoryId])
+}
+
+model Product {
+  id              String         @id @default(uuid())
+  name            String
+  description     String?        @db.Text
+  price           Decimal
+  oldPrice        Decimal?
+  image           String?        @db.Text
+  images          Json?          // Array of additional image URLs
+  colors          Json?
+  customConfig    Json?          // Professional config: printArea, overlay, mask
+  maskType        String?
+  size            String?
+  requiresCustomPhotos Boolean @default(false)
+  photoCount          Int     @default(0)
+  subCategoryId   String
+  subCategory     SubCategory    @relation(fields: [subCategoryId], references: [id])
+  childCategoryId String?
+  childCategory   ChildCategory? @relation(fields: [childCategoryId], references: [id])
+  orderItems      OrderItem[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Template {
+  id        String    @id @default(uuid())
+  name      String
+  imageUrl  String    @db.Text
+  type      String
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id])
+  status         OrderStatus @default(PENDING)
+  totalAmount    Decimal
+  deliveryFee    Decimal     @default(0)
+  items          OrderItem[]
+  firstName      String
+  lastName       String?
+  email          String
+  phone          String
+  address        String
+  city           String
+  trackingNumber String?     @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model OrderItem {
+  id              String         @id @default(uuid())
+  orderId         String
+  order           Order          @relation(fields: [orderId], references: [id])
+  productId       String
+  product         Product        @relation(fields: [productId], references: [id])
+  quantity        Int
+  price           Decimal
+  customerPhoto   String?        @db.LongText
+  customText      String?        @db.Text
+  isSpecialDesign Boolean        @default(false)
+}
+
+model DeliveryFee {
+  id        String   @id @default(uuid())
+  city      String   @unique
+  fee       Decimal
+  ameexId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
