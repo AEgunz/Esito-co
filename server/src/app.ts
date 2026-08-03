@@ -37,7 +37,7 @@ app.use('/api/delivery', deliveryRoutes);
 app.use('/api/templates', templateRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Quick Print API is running v2');
+  res.send('Esito-co API is running v2');
 });
 
 export default app;

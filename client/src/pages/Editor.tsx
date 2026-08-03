@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, MapPin, User, Truck, RefreshCw,
   ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, Smartphone, AlertCircle,
-  Upload, Trash2, Ruler, X
+  Upload, Trash2, Ruler, X, Sparkles
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 
@@ -152,7 +152,7 @@ const Editor = () => {
         phone: formData.phone,
         city: formData.city,
         address: formData.address,
-        email: 'customer@quickprint.com'
+        email: 'customer@esito-co.com'
       });
       navigate('/order-success');
     } catch (error) {

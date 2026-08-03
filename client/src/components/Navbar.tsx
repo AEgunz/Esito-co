@@ -35,7 +35,7 @@ const Navbar = () => {
             <div className="bg-black text-white p-2 rounded-xl group-hover:rotate-12 transition-transform">
                 <Printer className="h-6 w-6" />
             </div>
-            <span className="text-2xl font-black text-gray-900 tracking-tighter uppercase">Quick Print</span>
+            <span className="text-2xl font-black text-gray-900 tracking-tighter uppercase">Esito-co</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-10">

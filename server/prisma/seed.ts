@@ -15,12 +15,12 @@ async function main() {
   await prisma.category.deleteMany({});
 
   await prisma.user.upsert({
-    where: { email: 'admin@quickprint.com' },
+    where: { email: 'admin@esito-co.com' },
     update: { password: hashedPassword, role: 'ADMIN' },
     create: {
-      email: 'admin@quickprint.com',
+      email: 'admin@esito-co.com',
       password: hashedPassword,
-      name: 'Ayoub Admin',
+      name: 'Admin',
       role: 'ADMIN',
     },
   });
