@@ -114,7 +114,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
 export const updateOrder = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { firstName, lastName, email, phone, address, city, status } = req.body;
     const order = await prisma.order.update({
       where: { id },
@@ -136,7 +136,7 @@ export const updateOrder = async (req: Request, res: Response) => {
 
 export const deleteOrder = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.orderItem.deleteMany({ where: { orderId: id } });
     await prisma.order.delete({ where: { id } });
     res.json({ message: 'Order deleted successfully' });
@@ -148,7 +148,8 @@ export const deleteOrder = async (req: Request, res: Response) => {
 // Webhook for AMEEX to update order status
 export const ameexWebhook = async (req: Request, res: Response) => {
   try {
-    const { tracking_number, status } = req.body;
+    const tracking_number = req.body.tracking_number as string;
+    const status = req.body.status as string;
 
     if (!tracking_number || !status) {
       return res.status(400).json({ message: 'Missing required fields' });

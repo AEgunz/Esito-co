@@ -26,7 +26,7 @@ export const createTemplate = async (req: Request, res: Response) => {
 
 export const deleteTemplate = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.template.delete({ where: { id } });
     res.json({ message: 'Template deleted' });
   } catch (error) {

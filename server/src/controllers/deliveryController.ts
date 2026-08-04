@@ -12,7 +12,7 @@ export const getDeliveryFees = async (req: Request, res: Response) => {
 
 export const getDeliveryFeeByCity = async (req: Request, res: Response) => {
   try {
-    const { city } = req.params;
+    const city = req.params.city as string;
     const fee = await prisma.deliveryFee.findUnique({
       where: { city: city.toLowerCase() }
     });
@@ -38,7 +38,7 @@ export const upsertDeliveryFee = async (req: Request, res: Response) => {
 
 export const deleteDeliveryFee = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.deliveryFee.delete({ where: { id } });
     res.json({ message: 'Delivery fee deleted' });
   } catch (error) {

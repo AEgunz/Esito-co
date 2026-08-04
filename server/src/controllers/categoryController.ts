@@ -44,7 +44,7 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const updateCategory = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         const { name, description, image } = req.body;
         const category = await prisma.category.update({
             where: { id },
@@ -58,7 +58,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         await prisma.category.delete({ where: { id } });
         res.json({ message: 'Category deleted' });
     } catch (error) {
@@ -81,7 +81,7 @@ export const createSubCategory = async (req: Request, res: Response) => {
 
 export const deleteSubCategory = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         await prisma.subCategory.delete({ where: { id } });
         res.json({ message: 'Sub-category deleted' });
     } catch (error) {
@@ -104,7 +104,7 @@ export const createChildCategory = async (req: Request, res: Response) => {
 
 export const deleteChildCategory = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         await prisma.childCategory.delete({ where: { id } });
         res.json({ message: 'Child-category deleted' });
     } catch (error) {

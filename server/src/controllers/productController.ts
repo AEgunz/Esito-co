@@ -3,12 +3,15 @@ import prisma from '../utils/prisma';
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    const { categoryId, subCategoryId, childCategoryId } = req.query;
+    const categoryId = req.query.categoryId as string;
+    const subCategoryId = req.query.subCategoryId as string;
+    const childCategoryId = req.query.childCategoryId as string;
+
     const products = await prisma.product.findMany({
       where: {
-        ...(childCategoryId ? { childCategoryId: String(childCategoryId) } : {}),
-        ...(subCategoryId ? { subCategoryId: String(subCategoryId) } : {}),
-        ...(categoryId ? { subCategory: { categoryId: String(categoryId) } } : {}),
+        ...(childCategoryId ? { childCategoryId } : {}),
+        ...(subCategoryId ? { subCategoryId } : {}),
+        ...(categoryId ? { subCategory: { categoryId } } : {}),
       },
       include: {
         subCategory: {
@@ -26,7 +29,7 @@ export const getProducts = async (req: Request, res: Response) => {
 
 export const getProductById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -75,7 +78,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { name, description, price, oldPrice, image, images, subCategoryId, childCategoryId, size, maskType, colors, requiresCustomPhotos, photoCount } = req.body;
     const product = await prisma.product.update({
       where: { id },
@@ -104,7 +107,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.product.delete({
       where: { id },
     });
