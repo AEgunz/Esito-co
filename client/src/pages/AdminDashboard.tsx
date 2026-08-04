@@ -59,7 +59,9 @@ const AdminDashboard = () => {
       {/* Sidebar */}
       <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen">
         <div className="p-10">
-          <h2 className="text-xl font-black tracking-tighter uppercase">Admin Console</h2>
+          <Link to="/">
+            <img src="/logo.png" alt="Esito-co" className="h-8 w-auto object-contain" />
+          </Link>
         </div>
         <nav className="px-6 space-y-2">
           {menuItems.map((item) => {
