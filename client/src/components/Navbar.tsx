@@ -35,7 +35,7 @@ const Navbar = () => {
             <img
               src="/logo.png"
               alt="Estilo-co"
-              className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-16 md:h-20 w-auto object-contain transition-transform group-hover:scale-105"
             />
           </Link>
 

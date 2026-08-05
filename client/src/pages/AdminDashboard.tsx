@@ -60,7 +60,7 @@ const AdminDashboard = () => {
       <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen">
         <div className="p-10">
           <Link to="/">
-            <img src="/logo.png" alt="Estilo-co" className="h-8 w-auto object-contain" />
+            <img src="/logo.png" alt="Estilo-co" className="h-12 w-auto object-contain" />
           </Link>
         </div>
         <nav className="px-6 space-y-2">

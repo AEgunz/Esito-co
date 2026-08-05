@@ -86,6 +86,17 @@ const Editor = () => {
         setGallery(uniqueImages);
         setActiveImage(uniqueImages[0] || '');
 
+        // --- NEW: Preload color mockup images for instant switching on mobile ---
+        if (prod.colors && Array.isArray(prod.colors)) {
+          prod.colors.forEach((c: any) => {
+            if (c.image) {
+              const img = new Image();
+              img.src = getImageUrl(c.image);
+            }
+          });
+        }
+        // -----------------------------------------------------------------------
+
         if (prod.size) setSelectedSize(prod.size.split(',')[0].trim());
 
         if (prod.colors && Array.isArray(prod.colors) && prod.colors.length > 0) {
