@@ -34,7 +34,7 @@ const Navbar = () => {
           <Link to="/" className="flex items-center group">
             <img
               src="/logo.png"
-              alt="Esito-co"
+              alt="Estilo-co"
               className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
             />
           </Link>

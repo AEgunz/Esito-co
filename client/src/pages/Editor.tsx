@@ -152,7 +152,7 @@ const Editor = () => {
         phone: formData.phone,
         city: formData.city,
         address: formData.address,
-        email: 'customer@esito-co.com'
+        email: 'customer@estilo-co.com'
       });
       navigate('/order-success');
     } catch (error) {
