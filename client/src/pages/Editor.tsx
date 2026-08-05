@@ -43,8 +43,14 @@ const Editor = () => {
   const getImageUrl = (url: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
+
+    // Auto-detect server URL if VITE_SERVER_URL is missing
+    const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
+      ? `https://${window.location.hostname.replace('client', 'server')}` // Simple heuristic for Railway
+      : SERVER_URL;
+
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-    return `${SERVER_URL}${cleanUrl}`;
+    return `${baseUrl}${cleanUrl}`;
   };
 
   useEffect(() => {
