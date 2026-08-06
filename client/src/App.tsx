@@ -11,13 +11,16 @@ import AdminDashboard from './pages/AdminDashboard';
 
 import Success from './pages/Success';
 
+import { CartProvider } from './context/CartContext';
+
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <main>
-          <Routes>
+    <CartProvider>
+      <Router>
+        <div className="min-h-screen bg-white">
+          <Navbar />
+          <main>
+            <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetail />} />

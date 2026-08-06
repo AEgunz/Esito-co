@@ -8,10 +8,12 @@ import {
   Upload, Trash2, Ruler, X, Sparkles
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
+import { useCart } from '../context/CartContext';
 
 const Editor = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   // State
   const [product, setProduct] = useState<any>(null);
@@ -20,25 +22,12 @@ const Editor = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [customPhotos, setCustomPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-
-  const { data: deliveryCities } = useQuery({
-    queryKey: ['delivery-cities'],
-    queryFn: async () => {
-      try {
-        const res = await api.get('/delivery');
-        return Array.isArray(res.data) ? res.data : [];
-      } catch (e) {
-        return [];
-      }
-    }
-  });
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
@@ -139,44 +128,25 @@ const Editor = () => {
     }
   };
 
-  const handlePlaceOrder = async () => {
-    if (!formData.name || !formData.phone || !formData.city || !formData.address) {
-      alert('Please fill all details');
-      return;
-    }
-
+  const handleAddToCart = () => {
     if (product?.requiresCustomPhotos && customPhotos.length < product.photoCount) {
       alert(`Upload ${product.photoCount} photos first`);
       return;
     }
 
-    const shippingFee = formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 30;
-    const subtotal = Number(product.price) * quantity;
+    addToCart({
+      cartId: Date.now().toString(),
+      productId: product.id,
+      name: product.name,
+      price: Number(product.price),
+      image: activeImage,
+      selectedSize,
+      selectedColor,
+      quantity,
+      customPhotos: product.requiresCustomPhotos ? customPhotos : undefined
+    });
 
-    setIsSubmitting(true);
-    try {
-      await api.post('/orders', {
-        items: [{
-          productId: product.id,
-          quantity,
-          price: Number(product.price),
-          selectedSize,
-          selectedColor,
-          customerPhoto: product.requiresCustomPhotos ? JSON.stringify(customPhotos) : activeImage
-        }],
-        totalAmount: subtotal + shippingFee,
-        firstName: formData.name,
-        phone: formData.phone,
-        city: formData.city,
-        address: formData.address,
-        email: 'customer@estilo-co.com'
-      });
-      navigate('/order-success');
-    } catch (error) {
-      alert('Error placing order');
-    } finally {
-      setIsSubmitting(false);
-    }
+    navigate('/cart');
   };
 
   if (loading) return (
@@ -338,43 +308,31 @@ const Editor = () => {
           </div>
 
           <div className="bg-black p-8 md:p-10 rounded-[48px] shadow-2xl space-y-8 border border-white/5">
-            <h3 className="text-xl font-black text-white italic uppercase flex items-center gap-3 tracking-tighter"><Truck className="h-5 w-5 text-blue-500" /> Fast Shipping Info</h3>
-            <div className="grid gap-4">
-              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder="Phone Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
-              <div className="relative">
-                <select className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold cursor-pointer appearance-none" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})}>
-                    <option value="" className="bg-gray-900">Select City...</option>
-                    {deliveryCities?.map((c:any) => <option key={c.id} value={c.city} className="bg-gray-900">{c.city}</option>)}
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"><ChevronRight className="h-4 w-4 rotate-90" /></div>
-              </div>
-              <textarea className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder="Address" rows={2} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
-            </div>
+            <h3 className="text-xl font-black text-white italic uppercase flex items-center gap-3 tracking-tighter"><ShoppingBag className="h-5 w-5 text-blue-500" /> Order Summary</h3>
 
             {/* Order Summary Calculation */}
             <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-3">
                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Subtotal ({quantity}x)</span>
-                  <span className="text-white font-black">{(Number(product.price) * quantity).toFixed(0)} DH</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Item Price</span>
+                  <span className="text-white font-black">{Number(product.price).toFixed(0)} DH</span>
                </div>
                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Shipping Fee</span>
-                  <span className="text-white font-black">{formData.city ? (deliveryCities?.find((c:any) => c.city === formData.city)?.fee || 30) : 0} DH</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Quantity</span>
+                  <span className="text-white font-black">{quantity}x</span>
                </div>
                <div className="h-px bg-white/10 my-2" />
                <div className="flex justify-between items-center">
-                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">Total to Pay</span>
+                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">Subtotal</span>
                   <span className="text-2xl font-black text-white">
-                    {((Number(product.price) * quantity) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} DH
+                    {(Number(product.price) * quantity).toFixed(0)} DH
                   </span>
                </div>
             </div>
 
-            <button onClick={handlePlaceOrder} disabled={isSubmitting} className="w-full bg-blue-600 text-white py-5 rounded-[28px] font-black text-xl hover:bg-blue-700 transition shadow-xl uppercase flex items-center justify-center gap-3 active:scale-95">
-              {isSubmitting ? <RefreshCw className="h-6 w-6 animate-spin" /> : <>Confirm Order <ArrowRight className="h-6 w-6" /></>}
+            <button onClick={handleAddToCart} className="w-full bg-blue-600 text-white py-5 rounded-[28px] font-black text-xl hover:bg-blue-700 transition shadow-xl uppercase flex items-center justify-center gap-3 active:scale-95">
+              Add to Cart <ArrowRight className="h-6 w-6" />
             </button>
-            <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">Double check your info before confirming</p>
+            <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">You can add more items or different sizes in the cart</p>
           </div>
         </div>
       </div>
