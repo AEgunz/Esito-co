@@ -36,6 +36,8 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
+            selectedSize: item.selectedSize,
+            selectedColor: item.selectedColor,
             customerPhoto: item.customerPhoto,
             customText: item.customText,
             isSpecialDesign: item.isSpecialDesign || false

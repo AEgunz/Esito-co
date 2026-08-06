@@ -146,7 +146,7 @@ const Editor = () => {
       customPhotos: product.requiresCustomPhotos ? customPhotos : undefined
     });
 
-    navigate('/cart');
+    alert('Product added to cart!');
   };
 
   if (loading) return (

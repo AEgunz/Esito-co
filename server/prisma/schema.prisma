@@ -126,6 +126,8 @@ model OrderItem {
   product         Product        @relation(fields: [productId], references: [id])
   quantity        Int
   price           Decimal
+  selectedSize    String?
+  selectedColor   String?
   customerPhoto   String?        @db.LongText
   customText      String?        @db.Text
   isSpecialDesign Boolean        @default(false)
