@@ -185,7 +185,7 @@ const Shop = () => {
                         className="w-full h-full object-cover group-hover:scale-110 transition duration-[1.5s] ease-out"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                         <span className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl">Customize Now</span>
+                         <span className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl">Shop Now</span>
                       </div>
                     </div>
                     <div className="px-4 flex justify-between items-start">
