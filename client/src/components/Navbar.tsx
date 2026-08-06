@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
-  const { cartCount } = useCart();
+  const { cartCount, setIsCartOpen } = useCart();
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,14 +63,17 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link to="/cart" className="relative p-2 text-gray-400 hover:text-black transition">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 text-gray-400 hover:text-black transition"
+            >
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (
                 <span className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white">
                   {cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {user ? (
               <div className="flex items-center space-x-4 bg-gray-50 pl-4 pr-2 py-1.5 rounded-full border border-gray-100">

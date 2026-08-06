@@ -10,6 +10,7 @@ import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
 import Success from './pages/Success';
 import { CartProvider } from './context/CartContext';
+import CartDrawer from './components/CartDrawer';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-white">
           <Navbar />
+          <CartDrawer />
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
