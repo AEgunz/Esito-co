@@ -52,7 +52,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, newItem];
     });
-    setIsCartOpen(true);
   };
 
   const removeFromCart = (cartId: string) => {

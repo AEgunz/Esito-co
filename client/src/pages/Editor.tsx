@@ -13,7 +13,7 @@ import { useCart } from '../context/CartContext';
 const Editor = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, cartTotal, cartCount } = useCart();
 
   // State
   const [product, setProduct] = useState<any>(null);
@@ -168,26 +168,39 @@ const Editor = () => {
       return;
     }
 
-    if (product?.requiresCustomPhotos && customPhotos.length < product.photoCount) {
-      alert(`Upload ${product.photoCount} photos first`);
+    if (cartCount === 0 && (!product || (product.requiresCustomPhotos && customPhotos.length < product.photoCount))) {
+      alert('Your cart is empty and no product selected');
       return;
     }
 
     const shippingFee = formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 30;
-    const subtotal = Number(product.price) * quantity;
 
-    setIsSubmitting(true);
-    try {
-      await api.post('/orders', {
-        items: [{
+    // Prepare items: Use cart items if exist, otherwise use current item
+    const orderItems = cartCount > 0
+      ? cart.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor,
+          customerPhoto: item.customPhotos ? JSON.stringify(item.customPhotos) : item.image
+        }))
+      : [{
           productId: product.id,
           quantity,
           price: Number(product.price),
           selectedSize,
           selectedColor,
           customerPhoto: product.requiresCustomPhotos ? JSON.stringify(customPhotos) : activeImage
-        }],
-        totalAmount: subtotal + shippingFee,
+        }];
+
+    const finalTotal = (cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + shippingFee;
+
+    setIsSubmitting(true);
+    try {
+      await api.post('/orders', {
+        items: orderItems,
+        totalAmount: finalTotal,
         deliveryFee: shippingFee,
         firstName: formData.name,
         phone: formData.phone,
@@ -195,6 +208,7 @@ const Editor = () => {
         address: formData.address,
         email: 'customer@estilo-co.com'
       });
+      clearCart(); // Clear cart after successful order
       navigate('/order-success');
     } catch (error) {
       alert('Error placing order');
@@ -388,9 +402,20 @@ const Editor = () => {
             {/* Order Summary Calculation */}
             <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-3">
                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Subtotal ({quantity}x)</span>
-                  <span className="text-white font-black">{(Number(product.price) * quantity).toFixed(0)} DH</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Items in Cart</span>
+                  <span className="text-white font-black">{cartCount} items</span>
                </div>
+               <div className="flex justify-between text-sm">
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Cart Subtotal</span>
+                  <span className="text-white font-black">{cartTotal.toFixed(0)} DH</span>
+               </div>
+               {/* Show current item only if cart is empty or being added */}
+               {cartCount === 0 && (
+                 <div className="flex justify-between text-sm italic opacity-60 border-t border-white/5 pt-2">
+                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Selected (x{quantity})</span>
+                    <span className="text-white font-black">{(Number(product.price) * quantity).toFixed(0)} DH</span>
+                 </div>
+               )}
                <div className="flex justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Shipping Fee</span>
                   <span className="text-white font-black">{formData.city ? (deliveryCities?.find((c:any) => c.city === formData.city)?.fee || 30) : 0} DH</span>
@@ -399,7 +424,7 @@ const Editor = () => {
                <div className="flex justify-between items-center">
                   <span className="text-blue-500 font-black uppercase tracking-widest text-xs">Total to Pay</span>
                   <span className="text-2xl font-black text-white">
-                    {((Number(product.price) * quantity) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} DH
+                    {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} DH
                   </span>
                </div>
             </div>
