@@ -8,9 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
-
 import Success from './pages/Success';
-
 import { CartProvider } from './context/CartContext';
 
 function App() {
@@ -21,19 +19,20 @@ function App() {
           <Navbar />
           <main>
             <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/editor/:productId" element={<Editor />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/order-success" element={<Success />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+              <Route path="/" element={<Home />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/editor/:productId" element={<Editor />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/order-success" element={<Success />} />
+              <Route path="/admin/*" element={<AdminDashboard />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </CartProvider>
   );
 }
 
