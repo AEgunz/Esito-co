@@ -21,7 +21,13 @@
     "cta": "Shop Collection",
     "featured": "Featured Collections",
     "quality": "Quality First",
-    "qualityDesc": "We use only the finest materials for your memories."
+    "qualityDesc": "We use only the finest materials for your memories.",
+    "feature1Title": "Plaques",
+    "feature1Desc": "Luxurious display plaques.",
+    "feature2Title": "Photo Blocks",
+    "feature2Desc": "Elegant 3D MDF blocks.",
+    "feature3Title": "Keychains",
+    "feature3Desc": "Heart, Circle & Rectangle shapes."
   },
   "shop": {
     "title": "Collections",

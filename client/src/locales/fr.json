@@ -21,7 +21,13 @@
     "cta": "Voir la Collection",
     "featured": "Collections Vedettes",
     "quality": "La Qualité d'abord",
-    "qualityDesc": "Nous utilisons uniquement les meilleurs matériaux pour vos souvenirs."
+    "qualityDesc": "Nous utilisons uniquement les meilleurs matériaux pour vos souvenirs.",
+    "feature1Title": "Plaques",
+    "feature1Desc": "Plaques d'affichage luxueuses.",
+    "feature2Title": "Blocs Photo",
+    "feature2Desc": "Élégants blocs MDF 3D.",
+    "feature3Title": "Porte-clés",
+    "feature3Desc": "Formes cœur, cercle et rectangle."
   },
   "shop": {
     "title": "Collections",

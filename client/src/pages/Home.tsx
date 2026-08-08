@@ -67,16 +67,16 @@ const Home = () => {
       <section className="max-w-7xl mx-auto px-4 py-24 border-t border-gray-50">
         <div className="grid md:grid-cols-3 gap-12">
           {[
-            { icon: Heart, title: 'Keychains', desc: 'Heart, Circle & Rectangle shapes.' },
-            { icon: Box, title: 'Photo Blocks', desc: 'Elegant 3D MDF blocks.' },
-            { icon: Award, title: 'Plaques', desc: 'Luxurious display plaques.' }
+            { icon: Award, title: t('home.feature1Title'), desc: t('home.feature1Desc') },
+            { icon: Box, title: t('home.feature2Title'), desc: t('home.feature2Desc') },
+            { icon: Heart, title: t('home.feature3Title'), desc: t('home.feature3Desc') }
           ].map((item, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -10 }}
-              className="bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500"
+              className="bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 text-center"
             >
-              <div className="bg-gray-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+              <div className="bg-gray-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <item.icon className="h-8 w-8 text-black" />
               </div>
               <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
