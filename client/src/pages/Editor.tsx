@@ -252,10 +252,24 @@ const Editor = () => {
           )}
         </div>
 
-        {/* Product Info */}
-        <div className="space-y-8 text-start">
           <div className="space-y-3 text-start">
             <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter leading-tight uppercase italic">{product.name}</h1>
+
+            {/* Quick Ratings Info */}
+            <div
+              className="flex items-center gap-2 cursor-pointer group"
+              onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <div className="flex gap-0.5 text-amber-400">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="h-4 w-4 fill-current" />
+                ))}
+              </div>
+              <span className="text-xs font-bold text-gray-500 group-hover:text-blue-600 transition-colors">
+                ({product.reviews?.length || 0} {t('editor.reviews')})
+              </span>
+            </div>
+
             <div className="flex items-center gap-4 pt-2">
               <span className="text-4xl font-black text-blue-600">{Number(product.price).toFixed(0)} {t('common.dh')}</span>
               {product.oldPrice && <span className="text-2xl text-gray-300 line-through font-black">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>}
@@ -426,7 +440,7 @@ const Editor = () => {
       </div>
 
       {/* Reviews Section */}
-      <div className="max-w-7xl mx-auto mt-20 pt-20 border-t border-gray-100">
+      <div id="reviews-section" className="max-w-7xl mx-auto mt-20 pt-20 border-t border-gray-100">
         <div className="grid lg:grid-cols-3 gap-16">
           <div className="lg:col-span-2 space-y-12">
             <div className="flex items-center justify-between">
