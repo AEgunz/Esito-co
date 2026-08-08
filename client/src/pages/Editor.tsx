@@ -253,7 +253,7 @@ const Editor = () => {
         {/* Product Info */}
         <div className="space-y-8 text-start">
           <div className="space-y-3">
-            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-tight uppercase italic">{product.name}</h1>
+            <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter leading-tight uppercase italic">{product.name}</h1>
             <div className="flex items-center gap-4 pt-2">
               <span className="text-4xl font-black text-blue-600">{Number(product.price).toFixed(0)} {t('common.dh')}</span>
               {product.oldPrice && <span className="text-2xl text-gray-300 line-through font-black">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>}
