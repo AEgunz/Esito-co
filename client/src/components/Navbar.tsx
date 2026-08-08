@@ -48,12 +48,12 @@ const Navbar = () => {
   return (
     <nav className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-[100]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
-          <Link to="/" className="flex items-center group">
+        <div className="flex justify-between h-24 md:h-32 items-center">
+          <Link to="/" className="flex items-center group py-2">
             <img
               src="/logo.png"
               alt="Estilo-co"
-              className="h-16 md:h-20 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-20 md:h-28 w-auto object-contain transition-transform group-hover:scale-105"
             />
           </Link>
 
