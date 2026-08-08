@@ -37,3 +37,31 @@ export const getProductReviews = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching reviews' });
   }
 };
+
+export const getAllReviews = async (req: Request, res: Response) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      include: {
+        product: {
+          select: { name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching all reviews' });
+  }
+};
+
+export const deleteReview = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.review.delete({
+      where: { id }
+    });
+    res.json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting review' });
+  }
+};
