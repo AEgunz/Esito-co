@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { ArrowLeft, ChevronRight, LayoutGrid } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Shop = () => {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<any>(null);
   const [selectedChildCategory, setSelectedChildCategory] = useState<any>(null);
@@ -13,7 +15,13 @@ const Shop = () => {
   const getImageUrl = (url: string) => {
     if (!url) return 'https://via.placeholder.com/600';
     if (url.startsWith('http')) return url;
-    return `${SERVER_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+
+    // Auto-detect server URL if VITE_SERVER_URL is missing
+    const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
+      ? `https://${window.location.hostname.replace('client', 'server')}`
+      : SERVER_URL;
+
+    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   const { data: categories, isLoading: catsLoading } = useQuery({
@@ -51,7 +59,7 @@ const Shop = () => {
   if (catsLoading || productsLoading) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
       <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-xs font-black uppercase tracking-widest text-gray-400">Loading Collections...</p>
+      <p className="text-xs font-black uppercase tracking-widest text-gray-400">{t('common.loading')}</p>
     </div>
   );
 
@@ -67,12 +75,12 @@ const Shop = () => {
             className="space-y-16"
           >
             <div className="text-center space-y-4 max-w-2xl mx-auto">
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter">Collections</h1>
-              <p className="text-gray-400 font-medium text-lg italic">Select a category to discover our premium customizable products.</p>
+              <h1 className="text-5xl md:text-7xl font-black tracking-tighter">{t('shop.title')}</h1>
+              <p className="text-gray-400 font-medium text-lg italic">{t('shop.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {categories?.map((cat: any, i: number) => (
+              {categories?.map((cat: any) => (
                 <motion.button
                   key={cat.id}
                   whileHover={{ y: -8 }}
@@ -88,7 +96,7 @@ const Shop = () => {
                     <h3 className="text-3xl font-black text-white tracking-tight mb-2">{cat.name}</h3>
                     <p className="text-gray-300 text-sm font-medium line-clamp-2 mb-6">{cat.description}</p>
                     <div className="flex items-center gap-2 text-white font-black text-xs uppercase tracking-widest">
-                        Explore Shop <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        {t('shop.explore')} <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform rtl:rotate-180" />
                     </div>
                   </div>
                 </motion.button>
@@ -109,14 +117,14 @@ const Shop = () => {
                         onClick={() => setSelectedCategory(null)}
                         className="flex items-center gap-2 text-gray-400 hover:text-black transition font-black text-[10px] uppercase tracking-widest group mb-2"
                     >
-                        <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform" /> Back to Collections
+                        <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform rtl:rotate-180" /> {t('shop.back')}
                     </button>
                     <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-none">{selectedCategory.name}</h2>
                     <p className="text-gray-400 font-medium italic text-sm">{selectedCategory.description}</p>
                 </div>
                 <div className="bg-gray-50 px-4 py-2 rounded-full border border-gray-100 flex items-center gap-3 w-fit">
                     <LayoutGrid className="h-3.5 w-3.5 text-gray-400" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{filteredProducts.length} Shapes</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{filteredProducts.length} {t('shop.shapes')}</span>
                 </div>
             </div>
 
@@ -128,7 +136,7 @@ const Shop = () => {
                             onClick={() => { setSelectedSubCategory(null); setSelectedChildCategory(null); }}
                             className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${!selectedSubCategory ? 'bg-black text-white shadow-lg' : 'bg-white text-gray-400 border border-gray-100 hover:border-gray-300'}`}
                         >
-                            All Categories
+                            {t('shop.allCategories')}
                         </button>
                         {subCategories.map((sub: any) => (
                             <button
@@ -153,7 +161,7 @@ const Shop = () => {
                             onClick={() => setSelectedChildCategory(null)}
                             className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!selectedChildCategory ? 'bg-blue-600 text-white shadow-sm' : 'text-blue-400 hover:bg-blue-50'}`}
                         >
-                            All Types
+                            {t('shop.allTypes')}
                         </button>
                         {availableChildCategories.map((child: any) => (
                             <button
@@ -185,7 +193,7 @@ const Shop = () => {
                         className="w-full h-full object-cover group-hover:scale-110 transition duration-[1.5s] ease-out"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                         <span className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl">Shop Now</span>
+                         <span className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
                       </div>
                     </div>
                     <div className="px-4 flex justify-between items-start">
@@ -194,9 +202,9 @@ const Shop = () => {
                         <p className="text-gray-400 font-bold uppercase tracking-tighter text-[10px]">{product.size}</p>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-xl font-black text-blue-600">{Number(product.price).toFixed(0)} DH</span>
+                        <span className="text-xl font-black text-blue-600">{Number(product.price).toFixed(0)} {t('common.dh')}</span>
                         {product.oldPrice && (
-                            <span className="text-gray-400 text-xs line-through font-bold">{Number(product.oldPrice).toFixed(0)} DH</span>
+                            <span className="text-gray-400 text-xs line-through font-bold">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>
                         )}
                       </div>
                     </div>
@@ -205,8 +213,8 @@ const Shop = () => {
               ))}
               {filteredProducts.length === 0 && (
                 <div className="col-span-full py-20 text-center space-y-4">
-                    <p className="text-gray-300 font-black text-2xl uppercase tracking-tighter italic">Coming Soon...</p>
-                    <button onClick={() => setSelectedCategory(null)} className="text-blue-600 font-bold underline">Try another collection</button>
+                    <p className="text-gray-300 font-black text-2xl uppercase tracking-tighter italic">{t('shop.comingSoon')}</p>
+                    <button onClick={() => setSelectedCategory(null)} className="text-blue-600 font-bold underline">{t('shop.tryAnother')}</button>
                 </div>
               )}
             </div>

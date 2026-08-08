@@ -14,6 +14,18 @@
     "subtotal": "Subtotal",
     "shipping": "Shipping Fee"
   },
+  "shop": {
+    "title": "Collections",
+    "subtitle": "Select a category to discover our premium customizable products.",
+    "explore": "Explore Shop",
+    "back": "Back to Collections",
+    "shapes": "Shapes",
+    "allCategories": "All Categories",
+    "allTypes": "All Types",
+    "shopNow": "Shop Now",
+    "comingSoon": "Coming Soon...",
+    "tryAnother": "Try another collection"
+  },
   "editor": {
     "size": "Size",
     "color": "Color",

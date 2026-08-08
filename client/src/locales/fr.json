@@ -14,6 +14,18 @@
     "subtotal": "Sous-total",
     "shipping": "Frais de port"
   },
+  "shop": {
+    "title": "Collections",
+    "subtitle": "Sélectionnez une catégorie pour découvrir nos produits premium personnalisables.",
+    "explore": "Explorer la boutique",
+    "back": "Retour aux collections",
+    "shapes": "Modèles",
+    "allCategories": "Toutes les catégories",
+    "allTypes": "Tous les types",
+    "shopNow": "Acheter maintenant",
+    "comingSoon": "Bientôt disponible...",
+    "tryAnother": "Essayer une autre collection"
+  },
   "editor": {
     "size": "Taille",
     "color": "Couleur",
