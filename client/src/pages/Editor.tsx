@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, MapPin, User, Truck, RefreshCw,
-  ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, Smartphone, AlertCircle,
-  Ruler, X
+  ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, AlertCircle,
+  Ruler, X, Sparkles
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
@@ -48,7 +48,7 @@ const Editor = () => {
 
     // Auto-detect server URL if VITE_SERVER_URL is missing
     const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
-      ? `https://${window.location.hostname.replace('client', 'server')}` // Simple heuristic for Railway
+      ? `https://${window.location.hostname.replace('www.', '').replace('estilo-co.ma', 'esito-co-production.up.railway.app')}`
       : SERVER_URL;
 
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
@@ -94,16 +94,11 @@ const Editor = () => {
         setGallery(uniqueImages);
         setActiveImage(uniqueImages[0] || '');
 
-        // --- NEW: Preload color mockup images for instant switching on mobile ---
-        if (prod.colors && Array.isArray(prod.colors)) {
-          prod.colors.forEach((c: any) => {
-            if (c.image) {
-              const img = new Image();
-              img.src = getImageUrl(c.image);
-            }
-          });
-        }
-        // -----------------------------------------------------------------------
+        // Preload images
+        uniqueImages.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
 
         if (prod.size) setSelectedSize(prod.size.split(',')[0].trim());
 
@@ -124,23 +119,6 @@ const Editor = () => {
     fetchProduct();
   }, [productId, navigate]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    const data = new FormData();
-    data.append('image', file);
-    try {
-      const res = await api.post('/upload', data);
-      setCustomPhotos(prev => [...prev, res.data.url]);
-    } catch (error) {
-      alert('Upload failed');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleAddToCart = () => {
     addToCart({
       cartId: Date.now().toString(),
@@ -153,17 +131,12 @@ const Editor = () => {
       quantity
     });
 
-    alert('Product added to cart!');
+    alert(t('editor.addToCart') + ' ✅');
   };
 
   const handlePlaceOrder = async () => {
     if (!formData.name || !formData.phone || !formData.city || !formData.address) {
       alert('Please fill all details');
-      return;
-    }
-
-    if (cartCount === 0 && !product) {
-      alert('Your cart is empty and no product selected');
       return;
     }
 
@@ -202,7 +175,6 @@ const Editor = () => {
         address: formData.address,
         email: 'customer@estilo-co.com'
       });
-      clearCart(); // Clear cart after successful order
       navigate('/order-success');
     } catch (error) {
       alert('Error placing order');
@@ -279,7 +251,7 @@ const Editor = () => {
         </div>
 
         {/* Product Info */}
-        <div className="space-y-8">
+        <div className="space-y-8 text-start">
           <div className="space-y-3">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]">{product.name}</h1>
             <div className="flex items-center gap-4 pt-2">
@@ -290,7 +262,7 @@ const Editor = () => {
             {/* Professional Description */}
             <div className="pt-4 space-y-4">
               <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium">
-                {product.description || t('editor.uploadNote')}
+                {product.description}
               </p>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
@@ -339,7 +311,7 @@ const Editor = () => {
               {product.size && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ms-1">{t('editor.size')}</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.size')}</label>
                     <button onClick={() => setIsSizeGuideOpen(true)} className="text-[9px] font-black text-blue-600 uppercase flex items-center gap-1 hover:underline">
                       <Ruler className="h-3 w-3" /> {t('editor.guide')}
                     </button>
@@ -353,7 +325,7 @@ const Editor = () => {
               )}
               {product.colors && product.colors.length > 0 && (
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ms-1">{t('editor.color')}</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.color')}</label>
                   <div className="flex flex-wrap gap-2">
                     {product.colors.map((c: any, index: number) => {
                       const hex = c.hex || c;
@@ -376,7 +348,7 @@ const Editor = () => {
             </div>
 
             <div className="space-y-3 pt-6 border-t border-gray-50">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ms-1">{t('editor.quantity')} & {t('nav.cart')}</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.quantity')} & {t('nav.cart')}</label>
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-6 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center font-black">-</button>
@@ -399,7 +371,7 @@ const Editor = () => {
             <div className="grid gap-4">
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.fullName')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.phone')} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
-              <div className="relative">
+              <div className="relative text-start">
                 <select className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold cursor-pointer appearance-none" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})}>
                     <option value="" className="bg-gray-900">{t('editor.city')}</option>
                     {deliveryCities?.map((c:any) => <option key={c.id} value={c.city} className="bg-gray-900">{c.city}</option>)}
@@ -432,7 +404,7 @@ const Editor = () => {
                </div>
                <div className="h-px bg-white/10 my-2" />
                <div className="flex justify-between items-center">
-                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">{t('editor.total')}</span>
+                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">{t('common.total')}</span>
                   <span className="text-2xl font-black text-white">
                     {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
                   </span>
