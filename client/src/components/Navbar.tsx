@@ -79,6 +79,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* V3 */}
             {/* Language Switcher */}
             <div className="relative">
               <button
