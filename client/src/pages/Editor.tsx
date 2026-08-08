@@ -9,11 +9,13 @@ import {
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
+import { useTranslation } from 'react-i18next';
 
 const Editor = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { addToCart, cartTotal, cartCount } = useCart();
+  const { t } = useTranslation();
 
   // State
   const [product, setProduct] = useState<any>(null);
@@ -220,7 +222,7 @@ const Editor = () => {
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white">
       <RefreshCw className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-      <p className="font-black text-gray-400 uppercase tracking-widest text-xs">Syncing Product...</p>
+      <p className="font-black text-gray-400 uppercase tracking-widest text-xs">{t('common.loading')}</p>
     </div>
   );
 
@@ -289,14 +291,14 @@ const Editor = () => {
           <div className="space-y-3">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]">{product.name}</h1>
             <div className="flex items-center gap-4 pt-2">
-              <span className="text-3xl font-black text-blue-600">{Number(product.price).toFixed(0)} DH</span>
-              {product.oldPrice && <span className="text-xl text-gray-300 line-through font-bold">{Number(product.oldPrice).toFixed(0)} DH</span>}
+              <span className="text-3xl font-black text-blue-600">{Number(product.price).toFixed(0)} {t('common.dh')}</span>
+              {product.oldPrice && <span className="text-xl text-gray-300 line-through font-bold">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>}
             </div>
 
             {/* Professional Description */}
             <div className="pt-4 space-y-4">
               <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium">
-                {product.description || "Discover premium quality with our customizable collection. Perfect for personal style or unique gifts."}
+                {product.description || t('editor.uploadNote')}
               </p>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
@@ -305,8 +307,8 @@ const Editor = () => {
                     <Check className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Material</p>
-                    <p className="text-xs font-bold text-gray-900">100% Premium Cotton</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.material')}</p>
+                    <p className="text-xs font-bold text-gray-900">{t('editor.materialValue')}</p>
                   </div>
                 </div>
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
@@ -314,8 +316,8 @@ const Editor = () => {
                     <Sparkles className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Print Quality</p>
-                    <p className="text-xs font-bold text-gray-900">High-Definition DTG</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.printQuality')}</p>
+                    <p className="text-xs font-bold text-gray-900">{t('editor.printQualityValue')}</p>
                   </div>
                 </div>
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
@@ -323,8 +325,8 @@ const Editor = () => {
                     <RefreshCw className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Durability</p>
-                    <p className="text-xs font-bold text-gray-900">Wash-Resistant</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.durability')}</p>
+                    <p className="text-xs font-bold text-gray-900">{t('editor.durabilityValue')}</p>
                   </div>
                 </div>
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
@@ -332,8 +334,8 @@ const Editor = () => {
                     <User className="h-4 w-4 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Fit Type</p>
-                    <p className="text-xs font-bold text-gray-900">Modern Regular Fit</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.fitType')}</p>
+                    <p className="text-xs font-bold text-gray-900">{t('editor.fitTypeValue')}</p>
                   </div>
                 </div>
               </div>
@@ -345,9 +347,9 @@ const Editor = () => {
               {product.size && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Size</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.size')}</label>
                     <button onClick={() => setIsSizeGuideOpen(true)} className="text-[9px] font-black text-blue-600 uppercase flex items-center gap-1 hover:underline">
-                      <Ruler className="h-3 w-3" /> Guide
+                      <Ruler className="h-3 w-3" /> {t('editor.guide')}
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -359,7 +361,7 @@ const Editor = () => {
               )}
               {product.colors && product.colors.length > 0 && (
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Color</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.color')}</label>
                   <div className="flex flex-wrap gap-2">
                     {product.colors.map((c: any, index: number) => {
                       const hex = c.hex || c;
@@ -386,13 +388,13 @@ const Editor = () => {
                 <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3 shadow-sm">
                     <Sparkles className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <p className="text-[11px] font-medium text-blue-900 leading-relaxed">
-                        <span className="font-black uppercase block mb-1 tracking-widest text-[9px] text-blue-600 italic">Personalized Design</span>
-                        يرجى رفع صورتك الشخصية. فريقنا سيقوم بتحويلها إلى تصميم احترافي وإرسالها لك للتأكيد قبل الطباعة.
+                        <span className="font-black uppercase block mb-1 tracking-widest text-[9px] text-blue-600 italic">{t('editor.personalizedDesign')}</span>
+                        {t('editor.uploadNote')}
                     </p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest ml-1">Upload Your Photos ({customPhotos.length}/{product.photoCount})</label>
-                  {customPhotos.length > 0 && <button onClick={() => setCustomPhotos([])} className="text-[9px] font-black text-red-500 uppercase flex items-center gap-1"><Trash2 className="h-3 w-3" /> Clear</button>}
+                  <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest ml-1">{t('editor.uploadPhotos')} ({customPhotos.length}/{product.photoCount})</label>
+                  {customPhotos.length > 0 && <button onClick={() => setCustomPhotos([])} className="text-[9px] font-black text-red-500 uppercase flex items-center gap-1"><Trash2 className="h-3 w-3" /> {t('editor.clear')}</button>}
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {customPhotos.map((img, idx) => (
@@ -412,7 +414,7 @@ const Editor = () => {
             )}
 
             <div className="space-y-3 pt-6 border-t border-gray-50">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantity & Cart</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.quantity')} & {t('nav.cart')}</label>
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-6 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center font-black">-</button>
@@ -424,63 +426,63 @@ const Editor = () => {
                   onClick={handleAddToCart}
                   className="flex-1 min-w-[160px] bg-white text-blue-600 border-2 border-blue-600 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-50 transition flex items-center justify-center gap-2"
                 >
-                  <ShoppingBag className="h-4 w-4" /> Add to Cart
+                  <ShoppingBag className="h-4 w-4" /> {t('editor.addToCart')}
                 </button>
               </div>
             </div>
           </div>
 
           <div className="bg-black p-8 md:p-10 rounded-[48px] shadow-2xl space-y-8 border border-white/5">
-            <h3 className="text-xl font-black text-white italic uppercase flex items-center gap-3 tracking-tighter"><Truck className="h-5 w-5 text-blue-500" /> Fast Shipping Info</h3>
+            <h3 className="text-xl font-black text-white italic uppercase flex items-center gap-3 tracking-tighter"><Truck className="h-5 w-5 text-blue-500" /> {t('editor.shippingInfo')}</h3>
             <div className="grid gap-4">
-              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder="Phone Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.fullName')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.phone')} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
               <div className="relative">
                 <select className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold cursor-pointer appearance-none" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})}>
-                    <option value="" className="bg-gray-900">Select City...</option>
+                    <option value="" className="bg-gray-900">{t('editor.city')}</option>
                     {deliveryCities?.map((c:any) => <option key={c.id} value={c.city} className="bg-gray-900">{c.city}</option>)}
                 </select>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"><ChevronRight className="h-4 w-4 rotate-90" /></div>
               </div>
-              <textarea className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder="Address" rows={2} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
+              <textarea className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.address')} rows={2} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
             </div>
 
             {/* Order Summary Calculation */}
             <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-3">
                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Items in Cart</span>
-                  <span className="text-white font-black">{cartCount} items</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">{t('common.items')} in {t('nav.cart')}</span>
+                  <span className="text-white font-black">{cartCount} {t('common.items')}</span>
                </div>
                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Cart Subtotal</span>
-                  <span className="text-white font-black">{cartTotal.toFixed(0)} DH</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">{t('nav.cart')} {t('common.subtotal')}</span>
+                  <span className="text-white font-black">{cartTotal.toFixed(0)} {t('common.dh')}</span>
                </div>
                {/* Show current item only if cart is empty or being added */}
                {cartCount === 0 && (
                  <div className="flex justify-between text-sm italic opacity-60 border-t border-white/5 pt-2">
                     <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Selected (x{quantity})</span>
-                    <span className="text-white font-black">{(Number(product.price) * quantity).toFixed(0)} DH</span>
+                    <span className="text-white font-black">{(Number(product.price) * quantity).toFixed(0)} {t('common.dh')}</span>
                  </div>
                )}
                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Shipping Fee</span>
-                  <span className="text-white font-black">{formData.city ? (deliveryCities?.find((c:any) => c.city === formData.city)?.fee || 30) : 0} DH</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">{t('common.shipping')}</span>
+                  <span className="text-white font-black">{formData.city ? (deliveryCities?.find((c:any) => c.city === formData.city)?.fee || 30) : 0} {t('common.dh')}</span>
                </div>
                <div className="h-px bg-white/10 my-2" />
                <div className="flex justify-between items-center">
-                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">Total to Pay</span>
+                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">{t('editor.total')}</span>
                   <span className="text-2xl font-black text-white">
-                    {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} DH
+                    {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
                   </span>
                </div>
             </div>
 
             <button onClick={handlePlaceOrder} disabled={isSubmitting} className="w-full bg-blue-600 text-white py-5 rounded-[28px] font-black text-xl hover:bg-blue-700 transition shadow-xl uppercase flex items-center justify-center gap-3 active:scale-95">
-              {isSubmitting ? <RefreshCw className="h-6 w-6 animate-spin" /> : <>Confirm Order <ArrowRight className="h-6 w-6" /></>}
+              {isSubmitting ? <RefreshCw className="h-6 w-6 animate-spin" /> : <>{t('editor.confirmOrder')} <ArrowRight className="h-6 w-6" /></>}
             </button>
             <div className="flex flex-col items-center gap-1.5">
-              <p className="text-center text-xs font-black text-blue-500 uppercase tracking-[0.2em] italic">Fast delivery in 2-3 business days</p>
-              <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">Double check your info before confirming</p>
+              <p className="text-center text-xs font-black text-blue-500 uppercase tracking-[0.2em] italic">{t('editor.deliveryNote')}</p>
+              <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('editor.checkInfo')}</p>
             </div>
           </div>
         </div>

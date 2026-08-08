@@ -1,21 +1,37 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, User, LogOut, LayoutDashboard, ShoppingBag, Globe, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
   const { cartCount, setIsCartOpen } = useCart();
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState<any>(null);
+  const [isLangOpen, setIsLangOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const languages = [
+    { code: 'fr', name: 'Français', flag: 'FR' },
+    { code: 'ar', name: 'الدارجة', flag: 'MA' },
+    { code: 'en', name: 'English', flag: 'US' },
+  ];
+
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+    setIsLangOpen(false);
+    document.dir = code === 'ar' ? 'rtl' : 'ltr';
+  };
+
   useEffect(() => {
+    document.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-  }, [location]);
+  }, [location, i18n.language]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -25,8 +41,8 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/shop' },
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.shop'), path: '/shop' },
   ];
 
   return (
@@ -57,12 +73,47 @@ const Navbar = () => {
                 to="/admin"
                 className="bg-gray-50 text-gray-900 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-2 border border-gray-100"
               >
-                <LayoutDashboard className="h-4 w-4" /> Admin Panel
+                <LayoutDashboard className="h-4 w-4" /> {t('nav.admin')}
               </Link>
             )}
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Language Switcher */}
+            <div className="relative">
+              <button
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
+              >
+                <Globe className="h-4 w-4 text-gray-400" />
+                <span className="text-[10px] font-black uppercase tracking-tight text-gray-600">
+                  {languages.find(l => l.code === i18n.language.split('-')[0])?.name || 'Lang'}
+                </span>
+                <ChevronDown className={`h-3 w-3 text-gray-400 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {isLangOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full mt-2 right-0 bg-white border border-gray-100 rounded-2xl shadow-xl p-2 min-w-[120px] z-[110]"
+                  >
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => changeLanguage(lang.code)}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${i18n.language.startsWith(lang.code) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-gray-400 hover:text-black transition"

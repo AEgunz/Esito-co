@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "admin": "Admin",
+    "cart": "Cart"
+  },
+  "common": {
+    "dh": "DH",
+    "loading": "Loading...",
+    "items": "items",
+    "qty": "Qty",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping Fee"
+  },
+  "editor": {
+    "size": "Size",
+    "color": "Color",
+    "quantity": "Quantity",
+    "addToCart": "Add to Cart",
+    "confirmOrder": "Confirm Order",
+    "deliveryNote": "Fast delivery in 2-3 business days",
+    "checkInfo": "Double check your info before confirming",
+    "shippingInfo": "Shipping Information",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "city": "Select City...",
+    "address": "Address",
+    "material": "Material",
+    "materialValue": "100% Premium Cotton",
+    "printQuality": "Print Quality",
+    "printQualityValue": "High-Definition DTG",
+    "durability": "Durability",
+    "durabilityValue": "Wash-Resistant",
+    "fitType": "Fit Type",
+    "fitTypeValue": "Modern Regular Fit",
+    "guide": "Guide",
+    "personalizedDesign": "Personalized Design",
+    "uploadNote": "Please upload your photo. Our team will convert it into a professional design for your confirmation before printing.",
+    "uploadPhotos": "Upload Your Photos",
+    "clear": "Clear"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "checkout": "Checkout",
+    "empty": "Your cart is empty",
+    "startShopping": "Start Shopping",
+    "totalAmount": "Total Amount",
+    "checkoutNow": "Checkout Now",
+    "payOnDelivery": "Pay on Delivery (Cash)"
+  }
+}

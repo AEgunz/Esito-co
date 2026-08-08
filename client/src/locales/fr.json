@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "shop": "Boutique",
+    "admin": "Admin",
+    "cart": "Panier"
+  },
+  "common": {
+    "dh": "DH",
+    "loading": "Chargement...",
+    "items": "articles",
+    "qty": "Qté",
+    "total": "Total",
+    "subtotal": "Sous-total",
+    "shipping": "Frais de port"
+  },
+  "editor": {
+    "size": "Taille",
+    "color": "Couleur",
+    "quantity": "Quantité",
+    "addToCart": "Ajouter au panier",
+    "confirmOrder": "Confirmer la commande",
+    "deliveryNote": "Livraison rapide en 2-3 jours ouvrables",
+    "checkInfo": "Vérifiez vos infos avant de confirmer",
+    "shippingInfo": "Informations de livraison",
+    "fullName": "Nom complet",
+    "phone": "N° de téléphone",
+    "city": "Sélectionnez la ville...",
+    "address": "Adresse",
+    "material": "Matériau",
+    "materialValue": "100% Coton Premium",
+    "printQuality": "Qualité d'impression",
+    "printQualityValue": "DTG Haute Définition",
+    "durability": "Durabilité",
+    "durabilityValue": "Résistant au lavage",
+    "fitType": "Type de coupe",
+    "fitTypeValue": "Coupe régulière moderne",
+    "guide": "Guide",
+    "personalizedDesign": "Design Personnalisé",
+    "uploadNote": "Veuillez télécharger votre photo. Notre équipe la convertira en un design professionnel pour confirmation avant impression.",
+    "uploadPhotos": "Téléchargez vos photos",
+    "clear": "Effacer"
+  },
+  "cart": {
+    "title": "Votre Panier",
+    "checkout": "Paiement",
+    "empty": "Votre panier est vide",
+    "startShopping": "Commencer vos achats",
+    "totalAmount": "Montant Total",
+    "checkoutNow": "Passer à la caisse",
+    "payOnDelivery": "Paiement à la livraison (Cash)"
+  }
+}

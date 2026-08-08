@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "admin": "الإدارة",
+    "cart": "السلة"
+  },
+  "common": {
+    "dh": "درهم",
+    "loading": "جار التحميل...",
+    "items": "قطع",
+    "qty": "العدد",
+    "total": "المجموع",
+    "subtotal": "ثمن السلعة",
+    "shipping": "ثمن التوصيل"
+  },
+  "editor": {
+    "size": "المقاس",
+    "color": "اللون",
+    "quantity": "الكمية",
+    "addToCart": "زيد للسلة",
+    "confirmOrder": "أكد الطلب ديالي",
+    "deliveryNote": "التوصيل فـ 2 حتى لـ 3 أيام عمل",
+    "checkInfo": "تأكد من المعلومات ديالك قبل ما تصيفط",
+    "shippingInfo": "معلومات التوصيل",
+    "fullName": "السمية والكنية",
+    "phone": "نمرة التلفون",
+    "city": "ختار المدينة...",
+    "address": "العنوان ديالك",
+    "material": "نوع الثوب",
+    "materialValue": "100% قطن ممتاز",
+    "printQuality": "جودة الطباعة",
+    "printQualityValue": "طباعة HD عالية الدقة",
+    "durability": "الجودة",
+    "durabilityValue": "مكاتمحيش بالغسيل",
+    "fitType": "القصة",
+    "fitTypeValue": "قصة عصرية مريحة",
+    "guide": "دليل المقاسات",
+    "personalizedDesign": "تصميم خاص",
+    "uploadNote": "يرجى رفع صورتك الشخصية. فريقنا سيقوم بتحويلها إلى تصميم احترافي وإرسالها لك للتأكيد قبل الطباعة.",
+    "uploadPhotos": "صيفط لينا تصاورك",
+    "clear": "مسح"
+  },
+  "cart": {
+    "title": "السلة ديالك",
+    "checkout": "إتمام الطلب",
+    "empty": "السلة خاوية",
+    "startShopping": "بدا التسوق",
+    "totalAmount": "المجموع الكلي",
+    "checkoutNow": "دوز للدفع",
+    "payOnDelivery": "خلص كاش عند الاستلام"
+  }
+}
