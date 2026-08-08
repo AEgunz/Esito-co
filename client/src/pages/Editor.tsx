@@ -202,7 +202,7 @@ const Editor = () => {
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] py-6 px-4 md:py-12 md:px-6">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 text-start">
 
         {/* Gallery */}
         <div className="space-y-6">
@@ -252,6 +252,8 @@ const Editor = () => {
           )}
         </div>
 
+        {/* Product Info */}
+        <div className="space-y-8 text-start">
           <div className="space-y-3 text-start">
             <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter leading-tight uppercase italic">{product.name}</h1>
 
@@ -276,44 +278,44 @@ const Editor = () => {
             </div>
 
             {/* Professional Description */}
-            <div className="pt-4 space-y-4">
+            <div className="pt-4 space-y-4 text-start">
               <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium">
                 {product.description}
               </p>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
-                  <div className="bg-green-50 p-2 rounded-lg">
+                  <div className="bg-green-50 p-2 rounded-lg text-start">
                     <Check className="h-4 w-4 text-green-600" />
                   </div>
-                  <div>
+                  <div className="text-start">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.material')}</p>
                     <p className="text-xs font-bold text-gray-900">{t('editor.materialValue')}</p>
                   </div>
                 </div>
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
-                  <div className="bg-blue-50 p-2 rounded-lg">
+                  <div className="bg-blue-50 p-2 rounded-lg text-start">
                     <Check className="h-4 w-4 text-blue-600" />
                   </div>
-                  <div>
+                  <div className="text-start">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.printQuality')}</p>
                     <p className="text-xs font-bold text-gray-900">{t('editor.printQualityValue')}</p>
                   </div>
                 </div>
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm text-start">
                   <div className="bg-amber-50 p-2 rounded-lg">
                     <RefreshCw className="h-4 w-4 text-amber-600" />
                   </div>
-                  <div>
+                  <div className="text-start">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.durability')}</p>
                     <p className="text-xs font-bold text-gray-900">{t('editor.durabilityValue')}</p>
                   </div>
                 </div>
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm text-start">
                   <div className="bg-purple-50 p-2 rounded-lg">
                     <User className="h-4 w-4 text-purple-600" />
                   </div>
-                  <div>
+                  <div className="text-start">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.fitType')}</p>
                     <p className="text-xs font-bold text-gray-900">{t('editor.fitTypeValue')}</p>
                   </div>
@@ -322,10 +324,10 @@ const Editor = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 md:p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-8">
-            <div className="grid sm:grid-cols-2 gap-8">
+          <div className="bg-white p-6 md:p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-8 text-start">
+            <div className="grid sm:grid-cols-2 gap-8 text-start">
               {product.size && (
-                <div className="space-y-3">
+                <div className="space-y-3 text-start">
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.size')}</label>
                     <button onClick={() => setIsSizeGuideOpen(true)} className="text-[9px] font-black text-blue-600 uppercase flex items-center gap-1 hover:underline">
@@ -340,9 +342,9 @@ const Editor = () => {
                 </div>
               )}
               {product.colors && product.colors.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-3 text-start">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.color')}</label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 text-start">
                     {product.colors.map((c: any, index: number) => {
                       const hex = c.hex || c;
                       return (
@@ -363,9 +365,9 @@ const Editor = () => {
               )}
             </div>
 
-            <div className="space-y-3 pt-6 border-t border-gray-50">
+            <div className="space-y-3 pt-6 border-t border-gray-50 text-start">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.quantity')} & {t('nav.cart')}</label>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4 text-start">
                 <div className="flex items-center gap-6 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center font-black">-</button>
                   <span className="w-6 text-center font-black">{quantity}</span>
@@ -381,10 +383,104 @@ const Editor = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div className="bg-black p-8 md:p-10 rounded-[48px] shadow-2xl space-y-8 border border-white/5">
+      {/* NEW LAYOUT: Reviews on Left, Shipping on Right for PC */}
+      <div className="max-w-7xl mx-auto mt-12 grid lg:grid-cols-2 gap-8 lg:gap-12 text-start">
+
+        {/* Left Side: Reviews */}
+        <div className="space-y-12 order-2 lg:order-1 text-start">
+          <div className="flex items-center justify-between text-start">
+            <h2 className="text-3xl font-black uppercase tracking-tighter italic flex items-center gap-3 text-gray-900">
+              <MessageSquare className="h-6 w-6 text-blue-600" /> {t('editor.reviews')}
+            </h2>
+            <div className="bg-white px-4 py-2 rounded-full border border-gray-100 font-bold text-xs shadow-sm">
+              {product.reviews?.length || 0} {t('common.items')}
+            </div>
+          </div>
+
+          <div className="space-y-6 text-start">
+            {product.reviews?.length > 0 ? (
+              product.reviews.map((rev: any) => (
+                <div key={rev.id} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-4 text-start">
+                  <div className="flex justify-between items-start text-start">
+                    <div className="space-y-1 text-start">
+                      <p className="font-black text-gray-900">{rev.userName}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        {new Date(rev.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 text-amber-400">
+                      {[...Array(rev.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                    </div>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed font-medium text-start">"{rev.comment}"</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-200">
+                 <p className="text-gray-400 font-bold italic">{t('editor.noReviews')}</p>
+              </div>
+            )}
+
+            {/* Add Review Form */}
+            <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6 text-start">
+                <h3 className="text-xl font-black uppercase tracking-tighter italic text-gray-900">{t('editor.writeReview')}</h3>
+                <form onSubmit={handleReviewSubmit} className="space-y-4 text-start">
+                   <div className="grid md:grid-cols-2 gap-4 text-start">
+                      <div className="space-y-2 text-start">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.name')}</label>
+                        <input
+                          className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all"
+                          placeholder={t('editor.name')}
+                          value={reviewData.userName}
+                          onChange={e => setReviewData({...reviewData, userName: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2 text-start">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.rating')}</label>
+                        <div className="flex gap-1 text-start">
+                          {[1,2,3,4,5].map((num) => (
+                            <button
+                              key={num}
+                              type="button"
+                              onClick={() => setReviewData({...reviewData, rating: num})}
+                              className={`p-2 transition-all ${reviewData.rating >= num ? 'text-amber-400 scale-110' : 'text-gray-200'}`}
+                            >
+                              <Star className={`h-5 w-5 ${reviewData.rating >= num ? 'fill-current' : ''}`} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                   </div>
+                   <div className="space-y-2 text-start">
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.comment')}</label>
+                     <textarea
+                       className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all"
+                       rows={3}
+                       placeholder={t('editor.comment')}
+                       value={reviewData.comment}
+                       onChange={e => setReviewData({...reviewData, comment: e.target.value})}
+                     />
+                   </div>
+                   <button
+                     type="submit"
+                     disabled={isReviewSubmitting}
+                     className="w-full bg-black text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 transition shadow-lg disabled:opacity-50"
+                   >
+                     {isReviewSubmitting ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : t('editor.submitReview')}
+                   </button>
+                </form>
+             </div>
+          </div>
+        </div>
+
+        {/* Right Side: Shipping Information (The Black Box) */}
+        <div className="order-1 lg:order-2 text-start">
+          <div className="bg-black p-8 md:p-10 rounded-[48px] shadow-2xl space-y-8 border border-white/5 sticky top-24 text-start">
             <h3 className="text-xl font-black text-white italic uppercase flex items-center gap-3 tracking-tighter"><Truck className="h-5 w-5 text-blue-500" /> {t('editor.shippingInfo')}</h3>
-            <div className="grid gap-4">
+            <div className="grid gap-4 text-start">
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.fullName')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.phone')} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
               <div className="relative text-start">
@@ -399,7 +495,7 @@ const Editor = () => {
             </div>
 
             {/* Order Summary Calculation */}
-            <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-3">
+            <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-3 text-start">
                <div className="flex justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">{t('common.items')} in {t('nav.cart')}</span>
                   <span className="text-white font-black">{cartCount} {t('common.items')}</span>
@@ -421,7 +517,7 @@ const Editor = () => {
                </div>
                <div className="h-px bg-white/10 my-2" />
                <div className="flex justify-between items-center">
-                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">{t('editor.total')}</span>
+                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs italic">Total</span>
                   <span className="text-2xl font-black text-white">
                     {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
                   </span>
@@ -435,96 +531,6 @@ const Editor = () => {
               <p className="text-center text-xs font-black text-blue-500 uppercase tracking-[0.2em] italic">{t('editor.deliveryNote')}</p>
               <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('cart.payOnDelivery')}</p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Reviews Section */}
-      <div id="reviews-section" className="max-w-7xl mx-auto mt-20 pt-20 border-t border-gray-100">
-        <div className="grid lg:grid-cols-3 gap-16">
-          <div className="lg:col-span-2 space-y-12">
-            <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic flex items-center gap-3">
-                <MessageSquare className="h-6 w-6 text-blue-600" /> {t('editor.reviews')}
-              </h2>
-              <div className="bg-gray-50 px-4 py-2 rounded-full border border-gray-100 font-bold text-xs">
-                {product.reviews?.length || 0} {t('common.items')}
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              {product.reviews?.length > 0 ? (
-                product.reviews.map((rev: any) => (
-                  <div key={rev.id} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <p className="font-black text-gray-900">{rev.userName}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          {new Date(rev.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-1 text-amber-400">
-                        {[...Array(rev.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
-                      </div>
-                    </div>
-                    <p className="text-gray-600 leading-relaxed font-medium">{rev.comment}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-20 bg-gray-50/50 rounded-[40px] border-2 border-dashed border-gray-200">
-                   <p className="text-gray-400 font-bold italic">{t('editor.noReviews')}</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="lg:col-span-1">
-             <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm sticky top-24 space-y-6">
-                <h3 className="text-xl font-black uppercase tracking-tighter italic">{t('editor.writeReview')}</h3>
-                <form onSubmit={handleReviewSubmit} className="space-y-4">
-                   <div className="space-y-2">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.name')}</label>
-                     <input
-                       className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all"
-                       placeholder={t('editor.name')}
-                       value={reviewData.userName}
-                       onChange={e => setReviewData({...reviewData, userName: e.target.value})}
-                     />
-                   </div>
-                   <div className="space-y-2">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.rating')}</label>
-                     <div className="flex gap-2">
-                       {[1,2,3,4,5].map((num) => (
-                         <button
-                           key={num}
-                           type="button"
-                           onClick={() => setReviewData({...reviewData, rating: num})}
-                           className={`p-2 rounded-xl transition-all ${reviewData.rating >= num ? 'text-amber-400 scale-110' : 'text-gray-200'}`}
-                         >
-                           <Star className={`h-6 w-6 ${reviewData.rating >= num ? 'fill-current' : ''}`} />
-                         </button>
-                       ))}
-                     </div>
-                   </div>
-                   <div className="space-y-2">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.comment')}</label>
-                     <textarea
-                       className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all"
-                       rows={4}
-                       placeholder={t('editor.comment')}
-                       value={reviewData.comment}
-                       onChange={e => setReviewData({...reviewData, comment: e.target.value})}
-                     />
-                   </div>
-                   <button
-                     type="submit"
-                     disabled={isReviewSubmitting}
-                     className="w-full bg-black text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 transition shadow-lg disabled:opacity-50"
-                   >
-                     {isReviewSubmitting ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : t('editor.submitReview')}
-                   </button>
-                </form>
-             </div>
           </div>
         </div>
       </div>
