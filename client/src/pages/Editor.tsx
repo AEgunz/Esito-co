@@ -292,6 +292,52 @@ const Editor = () => {
               <span className="text-3xl font-black text-blue-600">{Number(product.price).toFixed(0)} DH</span>
               {product.oldPrice && <span className="text-xl text-gray-300 line-through font-bold">{Number(product.oldPrice).toFixed(0)} DH</span>}
             </div>
+
+            {/* Professional Description */}
+            <div className="pt-4 space-y-4">
+              <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium">
+                {product.description || "Discover premium quality with our customizable collection. Perfect for personal style or unique gifts."}
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                  <div className="bg-green-50 p-2 rounded-lg">
+                    <Check className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Material</p>
+                    <p className="text-xs font-bold text-gray-900">100% Premium Cotton</p>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                  <div className="bg-blue-50 p-2 rounded-lg">
+                    <Sparkles className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Print Quality</p>
+                    <p className="text-xs font-bold text-gray-900">High-Definition DTG</p>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                  <div className="bg-amber-50 p-2 rounded-lg">
+                    <RefreshCw className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Durability</p>
+                    <p className="text-xs font-bold text-gray-900">Wash-Resistant</p>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                  <div className="bg-purple-50 p-2 rounded-lg">
+                    <User className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Fit Type</p>
+                    <p className="text-xs font-bold text-gray-900">Modern Regular Fit</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="bg-white p-6 md:p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-8">
