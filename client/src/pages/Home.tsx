@@ -26,7 +26,7 @@ const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-6xl md:text-8xl font-bold tracking-tight text-gray-900 leading-[1.1]"
+              className="text-7xl md:text-9xl font-black tracking-tighter text-gray-900 leading-[0.9] uppercase italic"
             >
               {t('home.heroTitle')} <br />
               <span className="text-blue-600">Estilo-co</span>

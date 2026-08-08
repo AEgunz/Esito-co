@@ -20,7 +20,7 @@ const Success = () => {
             <CheckCircle className="h-16 w-16 text-green-600" />
           </motion.div>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900">Thank you for your order!</h1>
+        <h1 className="text-5xl font-black text-gray-900 tracking-tighter uppercase italic">Thank you for your order!</h1>
         <p className="text-lg text-gray-600 leading-relaxed">
           We have received your request. Our team will contact you shortly via phone to confirm the details.
         </p>

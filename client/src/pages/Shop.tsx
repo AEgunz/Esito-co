@@ -75,7 +75,7 @@ const Shop = () => {
             className="space-y-16"
           >
             <div className="text-center space-y-4 max-w-2xl mx-auto">
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter">{t('shop.title')}</h1>
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic text-gray-900">{t('shop.title')}</h1>
               <p className="text-gray-400 font-medium text-lg italic">{t('shop.subtitle')}</p>
             </div>
 
