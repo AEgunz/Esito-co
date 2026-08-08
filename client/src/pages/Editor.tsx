@@ -432,7 +432,10 @@ const Editor = () => {
             <button onClick={handlePlaceOrder} disabled={isSubmitting} className="w-full bg-blue-600 text-white py-5 rounded-[28px] font-black text-xl hover:bg-blue-700 transition shadow-xl uppercase flex items-center justify-center gap-3 active:scale-95">
               {isSubmitting ? <RefreshCw className="h-6 w-6 animate-spin" /> : <>Confirm Order <ArrowRight className="h-6 w-6" /></>}
             </button>
-            <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">Double check your info before confirming</p>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-center text-[10px] font-black text-blue-500 uppercase tracking-widest">التوصيل خلال 2 إلى 3 أيام عمل</p>
+              <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">Double check your info before confirming</p>
+            </div>
           </div>
         </div>
       </div>

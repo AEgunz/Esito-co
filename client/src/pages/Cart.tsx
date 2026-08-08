@@ -214,7 +214,10 @@ const Cart = () => {
             >
               {isSubmitting ? <RefreshCw className="h-6 w-6 animate-spin" /> : "Confirm Order"}
             </button>
-            <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">Pay on Delivery (Cash)</p>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-center text-[10px] font-black text-blue-500 uppercase tracking-widest italic">التوصيل خلال 2 إلى 3 أيام عمل</p>
+              <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">Pay on Delivery (Cash)</p>
+            </div>
           </div>
         </div>
       </div>
