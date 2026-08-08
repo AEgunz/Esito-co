@@ -339,7 +339,7 @@ const Editor = () => {
               {product.size && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.size')}</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ms-1">{t('editor.size')}</label>
                     <button onClick={() => setIsSizeGuideOpen(true)} className="text-[9px] font-black text-blue-600 uppercase flex items-center gap-1 hover:underline">
                       <Ruler className="h-3 w-3" /> {t('editor.guide')}
                     </button>
@@ -353,7 +353,7 @@ const Editor = () => {
               )}
               {product.colors && product.colors.length > 0 && (
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.color')}</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ms-1">{t('editor.color')}</label>
                   <div className="flex flex-wrap gap-2">
                     {product.colors.map((c: any, index: number) => {
                       const hex = c.hex || c;
@@ -376,7 +376,7 @@ const Editor = () => {
             </div>
 
             <div className="space-y-3 pt-6 border-t border-gray-50">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.quantity')} & {t('nav.cart')}</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ms-1">{t('editor.quantity')} & {t('nav.cart')}</label>
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-6 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center font-black">-</button>

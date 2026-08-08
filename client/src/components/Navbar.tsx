@@ -57,7 +57,7 @@ const Navbar = () => {
             />
           </Link>
 
-          <div className="hidden md:flex items-center space-x-10">
+          <div className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
                 <Link
                     key={link.path}
@@ -78,7 +78,7 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             {/* Language Switcher */}
             <div className="relative">
               <button
@@ -127,7 +127,7 @@ const Navbar = () => {
             </button>
 
             {user ? (
-              <div className="flex items-center space-x-4 bg-gray-50 pl-4 pr-2 py-1.5 rounded-full border border-gray-100">
+              <div className="flex items-center gap-4 bg-gray-50 pl-4 pr-2 py-1.5 rounded-full border border-gray-100">
                 <span className="text-xs font-black text-gray-400 uppercase tracking-tighter">Hi, {user.name.split(' ')[0]}</span>
                 <button
                   onClick={handleLogout}
