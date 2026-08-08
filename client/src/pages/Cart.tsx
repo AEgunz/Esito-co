@@ -15,7 +15,8 @@ const Cart = () => {
     name: '',
     phone: '',
     address: '',
-    city: ''
+    city: '',
+    note: ''
   });
 
   const [deliveryFee, setDeliveryFee] = useState(30.00); // Default
@@ -72,7 +73,8 @@ const Cart = () => {
         email: 'customer@estilo-co.com',
         phone: formData.phone,
         address: formData.address,
-        city: formData.city
+        city: formData.city,
+        note: formData.note
       };
 
       await api.post('/orders', orderData);
@@ -149,6 +151,16 @@ const Cart = () => {
                   className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition font-bold"
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.note')}</label>
+                <input
+                  type="text"
+                  placeholder={t('editor.note')}
+                  className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition font-bold"
+                  value={formData.note}
+                  onChange={(e) => setFormData({...formData, note: e.target.value})}
                 />
               </div>
             </form>

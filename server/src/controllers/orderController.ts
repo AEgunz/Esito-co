@@ -14,7 +14,8 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       email,
       phone,
       address,
-      city
+      city,
+      note
     } = req.body;
 
     const userId = req.user?.id;
@@ -31,6 +32,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         phone,
         address,
         city,
+        note,
         items: {
           create: items.map((item: any) => ({
             productId: item.productId,
@@ -117,7 +119,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
 export const updateOrder = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { firstName, lastName, email, phone, address, city, status } = req.body;
+    const { firstName, lastName, email, phone, address, city, note, status } = req.body;
     const order = await prisma.order.update({
       where: { id },
       data: {
@@ -127,6 +129,7 @@ export const updateOrder = async (req: Request, res: Response) => {
         phone,
         address,
         city,
+        note,
         status
       }
     });

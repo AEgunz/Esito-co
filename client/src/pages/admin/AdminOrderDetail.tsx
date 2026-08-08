@@ -103,6 +103,12 @@ const AdminOrderDetail = () => {
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Full Address</p>
                         <p className="font-medium text-gray-600 leading-relaxed">{order.address}</p>
                     </div>
+                    {order.note && (
+                        <div className="space-y-1 pt-2 border-t border-gray-50">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Customer Note</p>
+                            <p className="font-bold text-blue-600 bg-blue-50 p-3 rounded-xl italic">"{order.note}"</p>
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

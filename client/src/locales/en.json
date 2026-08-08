@@ -54,6 +54,7 @@
     "phone": "Phone Number",
     "city": "Select City...",
     "address": "Address",
+    "note": "Add a note (optional)",
     "material": "Material",
     "materialValue": "100% Premium Cotton",
     "printQuality": "Print Quality",

@@ -24,7 +24,7 @@ const Editor = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '', note: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -173,6 +173,7 @@ const Editor = () => {
         phone: formData.phone,
         city: formData.city,
         address: formData.address,
+        note: formData.note,
         email: 'customer@estilo-co.com'
       });
       navigate('/order-success');
@@ -379,6 +380,7 @@ const Editor = () => {
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"><ChevronRight className="h-4 w-4 rotate-90" /></div>
               </div>
               <textarea className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.address')} rows={2} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
+              <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.note')} value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
             </div>
 
             {/* Order Summary Calculation */}
