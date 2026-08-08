@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { Suspense } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -14,27 +15,33 @@ import CartDrawer from './components/CartDrawer';
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <div className="min-h-screen bg-white">
-          <Navbar />
-          <CartDrawer />
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/editor/:productId" element={<Editor />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/order-success" element={<Success />} />
-              <Route path="/admin/*" element={<AdminDashboard />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </CartProvider>
+    <Suspense fallback={
+      <div className="h-screen w-full flex items-center justify-center bg-white">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <CartProvider>
+        <Router>
+          <div className="min-h-screen bg-white text-start">
+            <Navbar />
+            <CartDrawer />
+            <main>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/editor/:productId" element={<Editor />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/order-success" element={<Success />} />
+                <Route path="/admin/*" element={<AdminDashboard />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </CartProvider>
+    </Suspense>
   );
 }
 
