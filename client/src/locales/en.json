@@ -14,6 +14,15 @@
     "subtotal": "Subtotal",
     "shipping": "Shipping Fee"
   },
+  "home": {
+    "badge": "Premium Custom Printing",
+    "heroTitle": "Preserve Your Memories on",
+    "heroSubtitle": "Exquisite custom printing on premium materials. Simple, modern, and beautifully crafted gifts for your loved ones.",
+    "cta": "Shop Collection",
+    "featured": "Featured Collections",
+    "quality": "Quality First",
+    "qualityDesc": "We use only the finest materials for your memories."
+  },
   "shop": {
     "title": "Collections",
     "subtitle": "Select a category to discover our premium customizable products.",

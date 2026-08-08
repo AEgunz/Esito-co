@@ -1,32 +1,35 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Heart, Box, Award } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
+  const { t } = useTranslation();
+
   return (
-    <div className="bg-white">
+    <div className="bg-white text-start">
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center space-y-8">
+      <section className="relative pt-20 pb-32 overflow-hidden text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="text-center space-y-8 flex flex-col items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="inline-flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-100"
+              className="inline-flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-100"
             >
               <Sparkles className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium text-gray-600">Premium MDF Printing</span>
+              <span className="text-sm font-medium text-gray-600">{t('home.badge')}</span>
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-6xl md:text-8xl font-bold tracking-tight text-gray-900"
+              className="text-6xl md:text-8xl font-bold tracking-tight text-gray-900 leading-[1.1]"
             >
-              Preserve Your <br />
-              <span className="text-blue-600">Memories on MDF</span>
+              {t('home.heroTitle')} <br />
+              <span className="text-blue-600">Estilo-co</span>
             </motion.h1>
 
             <motion.p
@@ -35,21 +38,20 @@ const Home = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="max-w-2xl mx-auto text-xl text-gray-500 leading-relaxed"
             >
-              Exquisite custom printing on premium MDF.
-              Simple, modern, and beautifully crafted gifts for your loved ones.
+              {t('home.heroSubtitle')}
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex justify-center gap-6 pt-4"
+              className="flex justify-center gap-6 pt-4 w-full"
             >
               <Link
                 to="/shop"
                 className="bg-black text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-800 transition flex items-center gap-2 group shadow-xl"
               >
-                Shop Collection <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />
+                {t('home.cta')} <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition rtl:rotate-180" />
               </Link>
             </motion.div>
           </div>

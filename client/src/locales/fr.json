@@ -14,6 +14,15 @@
     "subtotal": "Sous-total",
     "shipping": "Frais de port"
   },
+  "home": {
+    "badge": "Impression Premium Personnalisée",
+    "heroTitle": "Préservez vos souvenirs sur",
+    "heroSubtitle": "Impression personnalisée de qualité supérieure sur des matériaux d'exception. Des cadeaux simples, modernes et magnifiquement conçus pour vos proches.",
+    "cta": "Voir la Collection",
+    "featured": "Collections Vedettes",
+    "quality": "La Qualité d'abord",
+    "qualityDesc": "Nous utilisons uniquement les meilleurs matériaux pour vos souvenirs."
+  },
   "shop": {
     "title": "Collections",
     "subtitle": "Sélectionnez une catégorie pour découvrir nos produits premium personnalisables.",
