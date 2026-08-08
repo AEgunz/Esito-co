@@ -64,7 +64,14 @@
     "fitType": "Type de coupe",
     "fitTypeValue": "Coupe régulière moderne",
     "guide": "Guide",
-    "total": "Total"
+    "total": "Total",
+    "reviews": "Avis clients",
+    "noReviews": "Pas encore d'avis. Soyez le premier à donner votre avis !",
+    "writeReview": "Écrire un avis",
+    "submitReview": "Envoyer l'avis",
+    "rating": "Note",
+    "comment": "Commentaire",
+    "name": "Nom"
   },
   "cart": {
     "title": "Votre Panier",

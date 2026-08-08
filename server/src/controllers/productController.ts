@@ -36,7 +36,10 @@ export const getProductById = async (req: Request, res: Response) => {
         subCategory: {
           include: { category: true }
         },
-        childCategory: true
+        childCategory: true,
+        reviews: {
+          orderBy: { createdAt: 'desc' }
+        }
       }
     });
     if (!product) return res.status(404).json({ message: 'Product not found' });

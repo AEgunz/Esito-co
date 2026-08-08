@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, MapPin, User, Truck, RefreshCw,
   ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, AlertCircle,
-  Ruler, X, Sparkles
+  Ruler, X, Star, MessageSquare
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
@@ -14,11 +14,11 @@ import { useTranslation } from 'react-i18next';
 const Editor = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { addToCart, cartTotal, cartCount } = useCart();
+  const queryClient = useQueryClient();
+  const { addToCart, cartTotal, cartCount, clearCart } = useCart();
   const { t } = useTranslation();
 
   // State
-  const [product, setProduct] = useState<any>(null);
   const [activeImage, setActiveImage] = useState<string>('');
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState('');
@@ -26,9 +26,9 @@ const Editor = () => {
   const [quantity, setQuantity] = useState(1);
   const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '', note: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [reviewData, setReviewData] = useState({ rating: 5, comment: '', userName: '' });
+  const [isReviewSubmitting, setIsReviewSubmitting] = useState(false);
 
   const { data: deliveryCities } = useQuery({
     queryKey: ['delivery-cities'],
@@ -42,11 +42,19 @@ const Editor = () => {
     }
   });
 
+  const { data: product, isLoading, isError } = useQuery({
+    queryKey: ['product', productId],
+    queryFn: async () => {
+      const res = await api.get(`/products/${productId}`);
+      return res.data;
+    },
+    enabled: !!productId
+  });
+
   const getImageUrl = (url: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
 
-    // Auto-detect server URL if VITE_SERVER_URL is missing
     const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
       ? `https://${window.location.hostname.replace('www.', '').replace('estilo-co.ma', 'esito-co-production.up.railway.app')}`
       : SERVER_URL;
@@ -56,68 +64,39 @@ const Editor = () => {
   };
 
   useEffect(() => {
-    if (!productId) {
-      navigate('/shop');
-      return;
-    }
+    if (product) {
+      const images: string[] = [];
+      if (product.image) images.push(getImageUrl(product.image));
 
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get(`/products/${productId}`);
-        const prod = res.data;
-
-        if (!prod) {
-          setFetchError("Product not found");
-          return;
-        }
-
-        setProduct(prod);
-
-        const images: string[] = [];
-        if (prod.image) images.push(getImageUrl(prod.image));
-
-        if (prod.images) {
-          try {
-            const parsed = typeof prod.images === 'string' ? JSON.parse(prod.images) : prod.images;
-            if (Array.isArray(parsed)) {
-              parsed.forEach((img: any) => images.push(getImageUrl(img)));
-            }
-          } catch (e) {
-            if (typeof prod.images === 'string') {
-              prod.images.split(',').forEach((img: string) => images.push(getImageUrl(img.trim())));
-            }
+      if (product.images) {
+        try {
+          const parsed = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+          if (Array.isArray(parsed)) {
+            parsed.forEach((img: any) => images.push(getImageUrl(img)));
+          }
+        } catch (e) {
+          if (typeof product.images === 'string') {
+            product.images.split(',').forEach((img: string) => images.push(getImageUrl(img.trim())));
           }
         }
-
-        const uniqueImages = Array.from(new Set(images.filter(Boolean))) as string[];
-        setGallery(uniqueImages);
-        setActiveImage(uniqueImages[0] || '');
-
-        // Preload images
-        uniqueImages.forEach(src => {
-            const img = new Image();
-            img.src = src;
-        });
-
-        if (prod.size) setSelectedSize(prod.size.split(',')[0].trim());
-
-        if (prod.colors && Array.isArray(prod.colors) && prod.colors.length > 0) {
-            const firstColor = prod.colors[0];
-            setSelectedColor(firstColor.hex || firstColor);
-        }
-
-        setFetchError(null);
-      } catch (err: any) {
-        console.error("Editor Load Error:", err);
-        setFetchError("Failed to connect to server. Please try again.");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchProduct();
-  }, [productId, navigate]);
+      const uniqueImages = Array.from(new Set(images.filter(Boolean))) as string[];
+      setGallery(uniqueImages);
+      if (!activeImage) setActiveImage(uniqueImages[0] || '');
+
+      if (!selectedSize && product.size) setSelectedSize(product.size.split(',')[0].trim());
+
+      if (!selectedColor && product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
+          const firstColor = product.colors[0];
+          setSelectedColor(firstColor.hex || firstColor);
+      }
+    }
+  }, [product]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleAddToCart = () => {
     addToCart({
@@ -142,7 +121,6 @@ const Editor = () => {
 
     const shippingFee = formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 30;
 
-    // Prepare items: Use cart items if exist, otherwise use current item
     const orderItems = cartCount > 0
       ? cart.map(item => ({
           productId: item.productId,
@@ -176,6 +154,7 @@ const Editor = () => {
         note: formData.note,
         email: 'customer@estilo-co.com'
       });
+      clearCart();
       navigate('/order-success');
     } catch (error) {
       alert('Error placing order');
@@ -184,17 +163,39 @@ const Editor = () => {
     }
   };
 
-  if (loading) return (
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewData.userName || !reviewData.comment) {
+      alert('Please fill all review fields');
+      return;
+    }
+    setIsReviewSubmitting(true);
+    try {
+      await api.post('/reviews', {
+        ...reviewData,
+        productId: product.id
+      });
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      setReviewData({ rating: 5, comment: '', userName: '' });
+      alert('Review submitted! Thank you.');
+    } catch (error) {
+      alert('Error submitting review');
+    } finally {
+      setIsReviewSubmitting(false);
+    }
+  };
+
+  if (isLoading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white">
       <RefreshCw className="h-10 w-10 animate-spin text-blue-600 mb-4" />
       <p className="font-black text-gray-400 uppercase tracking-widest text-xs">{t('common.loading')}</p>
     </div>
   );
 
-  if (fetchError || !product) return (
+  if (isError || !product) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white p-10 text-center">
       <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-      <p className="font-bold text-gray-800">{fetchError || "Product Missing"}</p>
+      <p className="font-bold text-gray-800">Product Not Found</p>
       <button onClick={() => navigate('/shop')} className="mt-4 bg-black text-white px-8 py-3 rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-gray-800 transition">Back to Shop</button>
     </div>
   );
@@ -205,7 +206,7 @@ const Editor = () => {
 
         {/* Gallery */}
         <div className="space-y-6">
-          <div className="relative aspect-square bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex items-center justify-center group">
+          <div className="relative aspect-square bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex items-center justify-center group text-center">
             {activeImage ? (
                <img src={activeImage} alt="Product" className="w-full h-full object-contain p-4" />
             ) : (
@@ -253,7 +254,7 @@ const Editor = () => {
 
         {/* Product Info */}
         <div className="space-y-8 text-start">
-          <div className="space-y-3">
+          <div className="space-y-3 text-start">
             <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter leading-tight uppercase italic">{product.name}</h1>
             <div className="flex items-center gap-4 pt-2">
               <span className="text-4xl font-black text-blue-600">{Number(product.price).toFixed(0)} {t('common.dh')}</span>
@@ -278,7 +279,7 @@ const Editor = () => {
                 </div>
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
                   <div className="bg-blue-50 p-2 rounded-lg">
-                    <Sparkles className="h-4 w-4 text-blue-600" />
+                    <Check className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.printQuality')}</p>
@@ -406,7 +407,7 @@ const Editor = () => {
                </div>
                <div className="h-px bg-white/10 my-2" />
                <div className="flex justify-between items-center">
-                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">{t('common.total')}</span>
+                  <span className="text-blue-500 font-black uppercase tracking-widest text-xs">{t('editor.total')}</span>
                   <span className="text-2xl font-black text-white">
                     {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
                   </span>
@@ -418,8 +419,98 @@ const Editor = () => {
             </button>
             <div className="flex flex-col items-center gap-1.5">
               <p className="text-center text-xs font-black text-blue-500 uppercase tracking-[0.2em] italic">{t('editor.deliveryNote')}</p>
-              <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('editor.checkInfo')}</p>
+              <p className="text-center text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('cart.payOnDelivery')}</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="max-w-7xl mx-auto mt-20 pt-20 border-t border-gray-100">
+        <div className="grid lg:grid-cols-3 gap-16">
+          <div className="lg:col-span-2 space-y-12">
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-black uppercase tracking-tighter italic flex items-center gap-3">
+                <MessageSquare className="h-6 w-6 text-blue-600" /> {t('editor.reviews')}
+              </h2>
+              <div className="bg-gray-50 px-4 py-2 rounded-full border border-gray-100 font-bold text-xs">
+                {product.reviews?.length || 0} {t('common.items')}
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              {product.reviews?.length > 0 ? (
+                product.reviews.map((rev: any) => (
+                  <div key={rev.id} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <p className="font-black text-gray-900">{rev.userName}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          {new Date(rev.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-1 text-amber-400">
+                        {[...Array(rev.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed font-medium">{rev.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-20 bg-gray-50/50 rounded-[40px] border-2 border-dashed border-gray-200">
+                   <p className="text-gray-400 font-bold italic">{t('editor.noReviews')}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-1">
+             <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm sticky top-24 space-y-6">
+                <h3 className="text-xl font-black uppercase tracking-tighter italic">{t('editor.writeReview')}</h3>
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.name')}</label>
+                     <input
+                       className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all"
+                       placeholder={t('editor.name')}
+                       value={reviewData.userName}
+                       onChange={e => setReviewData({...reviewData, userName: e.target.value})}
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.rating')}</label>
+                     <div className="flex gap-2">
+                       {[1,2,3,4,5].map((num) => (
+                         <button
+                           key={num}
+                           type="button"
+                           onClick={() => setReviewData({...reviewData, rating: num})}
+                           className={`p-2 rounded-xl transition-all ${reviewData.rating >= num ? 'text-amber-400 scale-110' : 'text-gray-200'}`}
+                         >
+                           <Star className={`h-6 w-6 ${reviewData.rating >= num ? 'fill-current' : ''}`} />
+                         </button>
+                       ))}
+                     </div>
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.comment')}</label>
+                     <textarea
+                       className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all"
+                       rows={4}
+                       placeholder={t('editor.comment')}
+                       value={reviewData.comment}
+                       onChange={e => setReviewData({...reviewData, comment: e.target.value})}
+                     />
+                   </div>
+                   <button
+                     type="submit"
+                     disabled={isReviewSubmitting}
+                     className="w-full bg-black text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 transition shadow-lg disabled:opacity-50"
+                   >
+                     {isReviewSubmitting ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : t('editor.submitReview')}
+                   </button>
+                </form>
+             </div>
           </div>
         </div>
       </div>

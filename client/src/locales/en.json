@@ -64,7 +64,14 @@
     "fitType": "Fit Type",
     "fitTypeValue": "Modern Regular Fit",
     "guide": "Guide",
-    "total": "Total"
+    "total": "Total",
+    "reviews": "Customer Reviews",
+    "noReviews": "No reviews yet. Be the first to review!",
+    "writeReview": "Write a Review",
+    "submitReview": "Submit Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "name": "Name"
   },
   "cart": {
     "title": "Your Cart",
