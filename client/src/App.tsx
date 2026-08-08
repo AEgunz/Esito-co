@@ -3,7 +3,6 @@ import React, { Suspense } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
-import ProductDetail from './pages/ProductDetail';
 import Editor from './pages/Editor';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -29,8 +28,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<Shop />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/editor/:productId" element={<Editor />} />
+                <Route path="/product/:productId" element={<Editor />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/cart" element={<Cart />} />

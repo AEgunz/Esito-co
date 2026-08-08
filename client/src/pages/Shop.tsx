@@ -185,7 +185,7 @@ const Shop = () => {
                   transition={{ delay: i * 0.05 }}
                   className="group"
                 >
-                  <Link to={`/editor/${product.id}`} className="space-y-6 block">
+                  <Link to={`/product/${product.id}`} className="space-y-6 block">
                     <div className="aspect-square bg-white rounded-[40px] overflow-hidden relative border border-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-700">
                       <img
                         src={getImageUrl(product.image)}
