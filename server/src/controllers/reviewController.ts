@@ -29,7 +29,7 @@ export const getProductReviews = async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
     const reviews = await prisma.review.findMany({
-      where: { productId },
+      where: { productId: productId as string },
       orderBy: { createdAt: 'desc' }
     });
     res.json(reviews);
