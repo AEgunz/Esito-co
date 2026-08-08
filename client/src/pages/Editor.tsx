@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, MapPin, User, Truck, RefreshCw,
   ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, Smartphone, AlertCircle,
-  Upload, Trash2, Ruler, X, Sparkles
+  Ruler, X
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
@@ -29,8 +29,6 @@ const Editor = () => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [customPhotos, setCustomPhotos] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
 
   const { data: deliveryCities } = useQuery({
     queryKey: ['delivery-cities'],
@@ -144,11 +142,6 @@ const Editor = () => {
   };
 
   const handleAddToCart = () => {
-    if (product?.requiresCustomPhotos && customPhotos.length < product.photoCount) {
-      alert(`Upload ${product.photoCount} photos first`);
-      return;
-    }
-
     addToCart({
       cartId: Date.now().toString(),
       productId: product.id,
@@ -157,8 +150,7 @@ const Editor = () => {
       image: activeImage,
       selectedSize,
       selectedColor,
-      quantity,
-      customPhotos: product.requiresCustomPhotos ? customPhotos : undefined
+      quantity
     });
 
     alert('Product added to cart!');
@@ -170,7 +162,7 @@ const Editor = () => {
       return;
     }
 
-    if (cartCount === 0 && (!product || (product.requiresCustomPhotos && customPhotos.length < product.photoCount))) {
+    if (cartCount === 0 && !product) {
       alert('Your cart is empty and no product selected');
       return;
     }
@@ -185,7 +177,7 @@ const Editor = () => {
           price: item.price,
           selectedSize: item.selectedSize,
           selectedColor: item.selectedColor,
-          customerPhoto: item.customPhotos ? JSON.stringify(item.customPhotos) : item.image
+          customerPhoto: item.image
         }))
       : [{
           productId: product.id,
@@ -193,7 +185,7 @@ const Editor = () => {
           price: Number(product.price),
           selectedSize,
           selectedColor,
-          customerPhoto: product.requiresCustomPhotos ? JSON.stringify(customPhotos) : activeImage
+          customerPhoto: activeImage
         }];
 
     const finalTotal = (cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + shippingFee;
@@ -382,36 +374,6 @@ const Editor = () => {
                 </div>
               )}
             </div>
-
-            {product.requiresCustomPhotos && (
-              <div className="pt-6 border-t border-gray-50 space-y-4">
-                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3 shadow-sm">
-                    <Sparkles className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <p className="text-[11px] font-medium text-blue-900 leading-relaxed">
-                        <span className="font-black uppercase block mb-1 tracking-widest text-[9px] text-blue-600 italic">{t('editor.personalizedDesign')}</span>
-                        {t('editor.uploadNote')}
-                    </p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest ml-1">{t('editor.uploadPhotos')} ({customPhotos.length}/{product.photoCount})</label>
-                  {customPhotos.length > 0 && <button onClick={() => setCustomPhotos([])} className="text-[9px] font-black text-red-500 uppercase flex items-center gap-1"><Trash2 className="h-3 w-3" /> {t('editor.clear')}</button>}
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {customPhotos.map((img, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 group shadow-sm">
-                      <img src={getImageUrl(img)} className="w-full h-full object-cover" />
-                      <button onClick={() => setCustomPhotos(customPhotos.filter((_, i) => i !== idx))} className="absolute inset-0 bg-red-600/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center"><Trash2 className="h-5 w-5" /></button>
-                    </div>
-                  ))}
-                  {customPhotos.length < product.photoCount && (
-                    <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 cursor-pointer hover:bg-gray-100 transition relative overflow-hidden">
-                      {isUploading ? <RefreshCw className="h-5 w-5 animate-spin text-blue-600" /> : <Upload className="h-5 w-5 text-gray-300" />}
-                      <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                    </label>
-                  )}
-                </div>
-              </div>
-            )}
 
             <div className="space-y-3 pt-6 border-t border-gray-50">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.quantity')} & {t('nav.cart')}</label>

@@ -48,10 +48,7 @@
     "fitType": "Fit Type",
     "fitTypeValue": "Modern Regular Fit",
     "guide": "Guide",
-    "personalizedDesign": "Personalized Design",
-    "uploadNote": "Please upload your photo. Our team will convert it into a professional design for your confirmation before printing.",
-    "uploadPhotos": "Upload Your Photos",
-    "clear": "Clear"
+    "total": "Total"
   },
   "cart": {
     "title": "Your Cart",

@@ -48,10 +48,7 @@
     "fitType": "Type de coupe",
     "fitTypeValue": "Coupe régulière moderne",
     "guide": "Guide",
-    "personalizedDesign": "Design Personnalisé",
-    "uploadNote": "Veuillez télécharger votre photo. Notre équipe la convertira en un design professionnel pour confirmation avant impression.",
-    "uploadPhotos": "Téléchargez vos photos",
-    "clear": "Effacer"
+    "total": "Total"
   },
   "cart": {
     "title": "Votre Panier",
