@@ -81,5 +81,13 @@
     "totalAmount": "Montant Total",
     "checkoutNow": "Passer à la caisse",
     "payOnDelivery": "Paiement à la livraison (Cash)"
+  },
+  "footer": {
+    "contact": "Contactez-nous",
+    "community": "Rejoignez notre communauté",
+    "newsletter": "Bénéficiez d'un accès anticipé aux nouvelles collections et aux offres exclusives.",
+    "rights": "Tous droits réservés.",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation"
   }
 }

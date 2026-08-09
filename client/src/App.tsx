@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Success from './pages/Success';
 import { CartProvider } from './context/CartContext';
 import CartDrawer from './components/CartDrawer';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -21,10 +22,10 @@ function App() {
     }>
       <CartProvider>
         <Router>
-          <div className="min-h-screen bg-white text-start">
+          <div className="min-h-screen bg-white text-start flex flex-col">
             <Navbar />
             <CartDrawer />
-            <main>
+            <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<Shop />} />
@@ -36,6 +37,7 @@ function App() {
                 <Route path="/admin/*" element={<AdminDashboard />} />
               </Routes>
             </main>
+            <Footer />
           </div>
         </Router>
       </CartProvider>

@@ -81,5 +81,13 @@
     "totalAmount": "Total Amount",
     "checkoutNow": "Checkout Now",
     "payOnDelivery": "Pay on Delivery (Cash)"
+  },
+  "footer": {
+    "contact": "Contact Us",
+    "community": "Join Our Community",
+    "newsletter": "Get early access to new collections and exclusive offers.",
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
   }
 }
