@@ -73,3 +73,36 @@ export const getAllUsers = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching users' });
   }
 };
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent deleting self
+    if (id === (req as any).user.id) {
+      return res.status(400).json({ message: "You cannot delete your own admin account" });
+    }
+
+    await prisma.user.delete({
+      where: { id }
+    });
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting user' });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role } = req.body;
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { name, email, role }
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user' });
+  }
+};
