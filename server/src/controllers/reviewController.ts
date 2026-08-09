@@ -56,7 +56,7 @@ export const getAllReviews = async (req: Request, res: Response) => {
 
 export const deleteReview = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.review.delete({
       where: { id }
     });
