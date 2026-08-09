@@ -10,6 +10,8 @@ import {
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
+import Zoom from 'react-medium-image-zoom';
+import 'react-medium-image-zoom/dist/styles.css';
 
 const Editor = () => {
   const { productId } = useParams();
@@ -208,7 +210,9 @@ const Editor = () => {
         <div className="space-y-6">
           <div className="relative aspect-square bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex items-center justify-center group text-center">
             {activeImage ? (
-               <img src={activeImage} alt="Product" className="w-full h-full object-contain p-4" />
+               <Zoom>
+                 <img src={activeImage} alt="Product" className="w-full h-full object-contain p-4 cursor-zoom-in" />
+               </Zoom>
             ) : (
                <div className="text-gray-300 font-bold uppercase text-xs">No Image</div>
             )}
