@@ -145,7 +145,7 @@ const Editor = () => {
 
     setIsSubmitting(true);
     try {
-      await api.post('/orders', {
+      const res = await api.post('/orders', {
         items: orderItems,
         totalAmount: finalTotal,
         deliveryFee: shippingFee,
@@ -156,6 +156,37 @@ const Editor = () => {
         note: formData.note,
         email: 'customer@estilo-co.com'
       });
+
+      const newOrder = res.data;
+
+      // Format WhatsApp Message
+      const whatsappNumber = "212693360625";
+      let message = `*طلب جديد من Estilo-co*\n\n`;
+      message += `*رقم الطلب:* #${newOrder.id.substring(0, 8)}\n`;
+      message += `*الاسم:* ${formData.name}\n`;
+      message += `*الهاتف:* ${formData.phone}\n`;
+      message += `*المدينة:* ${formData.city}\n`;
+      message += `*العنوان:* ${formData.address}\n`;
+      if (formData.note) message += `*ملاحظة:* ${formData.note}\n`;
+      message += `\n*المنتجات:*\n`;
+
+      orderItems.forEach((item: any, index: number) => {
+        const prodName = cartCount > 0 ? cart[index].name : product.name;
+        message += `${index + 1}. ${prodName}\n`;
+        message += `   - المقاس: ${item.selectedSize}\n`;
+        if (item.selectedColor) message += `   - اللون: ${item.selectedColor}\n`;
+        message += `   - الكمية: ${item.quantity}\n`;
+        message += `   - الصورة: ${getImageUrl(item.customerPhoto)}\n\n`;
+      });
+
+      message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n`;
+
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
+      alert('Order placed successfully! Redirecting to WhatsApp...');
+      window.open(whatsappUrl, '_blank');
+
       clearCart();
       navigate('/order-success');
     } catch (error) {

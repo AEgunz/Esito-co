@@ -77,8 +77,37 @@ const Cart = () => {
         note: formData.note
       };
 
-      await api.post('/orders', orderData);
-      alert('Order placed successfully!');
+      const res = await api.post('/orders', orderData);
+      const newOrder = res.data;
+
+      // 2. Format WhatsApp Message
+      const whatsappNumber = "212693360625";
+      let message = `*طلب جديد من Estilo-co*\n\n`;
+      message += `*رقم الطلب:* #${newOrder.id.substring(0, 8)}\n`;
+      message += `*الاسم:* ${formData.name}\n`;
+      message += `*الهاتف:* ${formData.phone}\n`;
+      message += `*المدينة:* ${formData.city}\n`;
+      message += `*العنوان:* ${formData.address}\n`;
+      if (formData.note) message += `*ملاحظة:* ${formData.note}\n`;
+      message += `\n*المنتجات:*\n`;
+
+      cart.forEach((item, index) => {
+        message += `${index + 1}. ${item.name}\n`;
+        message += `   - المقاس: ${item.selectedSize}\n`;
+        if (item.selectedColor) message += `   - اللون: ${item.selectedColor}\n`;
+        message += `   - الكمية: ${item.quantity}\n`;
+        message += `   - الرابط: ${window.location.origin}/product/${item.productId}\n\n`;
+      });
+
+      message += `*المجموع الكلي:* ${grandTotal.toFixed(0)} DH\n`;
+
+      // 3. Open WhatsApp
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
+      alert('Order placed successfully! Redirecting to WhatsApp...');
+      window.open(whatsappUrl, '_blank');
+
       clearCart();
       navigate('/order-success');
     } catch (error) {
