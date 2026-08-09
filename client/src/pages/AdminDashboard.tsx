@@ -8,6 +8,7 @@ import AdminDelivery from './admin/AdminDelivery';
 import AdminStats from './admin/AdminStats';
 import AdminCustomers from './admin/AdminCustomers';
 import AdminCategories from './admin/AdminCategories';
+// V4 Force Update for Reviews
 import AdminReviews from './admin/AdminReviews';
 
 const AdminDashboard = () => {
