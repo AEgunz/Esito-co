@@ -17,7 +17,7 @@ const Editor = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { addToCart, cartTotal, cartCount, clearCart } = useCart();
+  const { cart, addToCart, cartTotal, cartCount, clearCart } = useCart();
   const { t } = useTranslation();
 
   // State
