@@ -125,7 +125,7 @@ const Navbar = () => {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   key={cartCount}
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg shadow-blue-200"
+                  className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg shadow-red-200"
                 >
                   <motion.span
                     animate={{
