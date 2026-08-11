@@ -3,7 +3,7 @@ import api, { SERVER_URL } from '../api/axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, LayoutGrid } from 'lucide-react';
+import { ArrowLeft, ChevronRight, LayoutGrid, Square, Grid2X2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const Shop = () => {
@@ -11,6 +11,7 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<any>(null);
   const [selectedChildCategory, setSelectedChildCategory] = useState<any>(null);
+  const [mobileCols, setMobileCols] = useState(1); // 1 or 2 columns on mobile
 
   const getImageUrl = (url: string) => {
     if (!url) return 'https://via.placeholder.com/600';
@@ -122,9 +123,24 @@ const Shop = () => {
                     <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-none">{selectedCategory.name}</h2>
                     <p className="text-gray-400 font-medium italic text-sm">{selectedCategory.description}</p>
                 </div>
-                <div className="bg-gray-50 px-4 py-2 rounded-full border border-gray-100 flex items-center gap-3 w-fit">
-                    <LayoutGrid className="h-3.5 w-3.5 text-gray-400" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{filteredProducts.length} {t('shop.shapes')}</span>
+                <div className="bg-gray-50 p-1.5 rounded-full border border-gray-100 flex items-center gap-1 w-fit">
+                    <button
+                      onClick={() => setMobileCols(1)}
+                      className={`p-2 rounded-full transition-all ${mobileCols === 1 ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400'}`}
+                    >
+                      <Square className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setMobileCols(2)}
+                      className={`p-2 rounded-full transition-all ${mobileCols === 2 ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400'}`}
+                    >
+                      <Grid2X2 className="h-4 w-4" />
+                    </button>
+                    <div className="w-px h-4 bg-gray-200 mx-1" />
+                    <div className="px-3 flex items-center gap-2">
+                      <LayoutGrid className="h-3.5 w-3.5 text-gray-400" />
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{filteredProducts.length} {t('shop.shapes')}</span>
+                    </div>
                 </div>
             </div>
 
@@ -176,7 +192,7 @@ const Shop = () => {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12 pt-4">
+            <div className={`grid ${mobileCols === 1 ? 'grid-cols-1' : 'grid-cols-2'} sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-12 pt-4`}>
               {filteredProducts?.map((product: any, i: number) => (
                 <motion.div
                   key={product.id}
@@ -185,26 +201,26 @@ const Shop = () => {
                   transition={{ delay: i * 0.05 }}
                   className="group"
                 >
-                  <Link to={`/product/${product.id}`} className="space-y-6 block">
-                    <div className="aspect-square bg-white rounded-[40px] overflow-hidden relative border border-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-700">
+                  <Link to={`/product/${product.id}`} className="space-y-4 md:space-y-6 block">
+                    <div className={`${mobileCols === 2 ? 'rounded-[24px]' : 'rounded-[40px]'} aspect-square bg-white overflow-hidden relative border border-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-700`}>
                       <img
                         src={getImageUrl(product.image)}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition duration-[1.5s] ease-out"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                         <span className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
+                         <span className="bg-white text-black px-6 py-2 md:px-8 md:py-3 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
                       </div>
                     </div>
-                    <div className="px-4 flex justify-between items-start">
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-black text-gray-900 leading-none">{product.name}</h3>
-                        <p className="text-gray-400 font-bold uppercase tracking-tighter text-[10px]">{product.size}</p>
+                    <div className={`${mobileCols === 2 ? 'px-2' : 'px-4'} flex justify-between items-start gap-2`}>
+                      <div className="space-y-1 min-w-0">
+                        <h3 className={`${mobileCols === 2 ? 'text-sm' : 'text-lg'} font-black text-gray-900 leading-tight truncate`}>{product.name}</h3>
+                        <p className="text-gray-400 font-bold uppercase tracking-tighter text-[9px]">{product.size}</p>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xl font-black text-blue-600">{Number(product.price).toFixed(0)} {t('common.dh')}</span>
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className={`${mobileCols === 2 ? 'text-base' : 'text-xl'} font-black text-blue-600`}>{Number(product.price).toFixed(0)} {t('common.dh')}</span>
                         {product.oldPrice && (
-                            <span className="text-gray-400 text-xs line-through font-bold">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>
+                            <span className="text-gray-400 text-[10px] line-through font-bold">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>
                         )}
                       </div>
                     </div>
