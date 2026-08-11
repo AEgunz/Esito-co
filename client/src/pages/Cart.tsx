@@ -92,11 +92,11 @@ const Cart = () => {
       message += `\n*المنتجات:*\n`;
 
       cart.forEach((item, index) => {
-        message += `${index + 1}. ${item.name}\n`;
-        message += `   - المقاس: ${item.selectedSize}\n`;
-        if (item.selectedColor) message += `   - اللون: ${item.selectedColor}\n`;
-        message += `   - الكمية: ${item.quantity}\n`;
-        message += `   - الرابط: ${window.location.origin}/product/${item.productId}\n\n`;
+        message += `📦 *${item.name}*\n`;
+        message += `📏 *المقاس:* ${item.selectedSize}\n`;
+        if (item.selectedColor) message += `🎨 *اللون:* ${item.selectedColor}\n`;
+        message += `🔢 *الكمية:* ${item.quantity}\n`;
+        message += `🖼️ *الصورة:* ${getImageUrl(item.image)}\n\n`;
       });
 
       message += `*المجموع الكلي:* ${grandTotal.toFixed(0)} DH\n`;

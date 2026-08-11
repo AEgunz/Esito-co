@@ -172,11 +172,18 @@ const Editor = () => {
 
       orderItems.forEach((item: any, index: number) => {
         const prodName = cartCount > 0 ? cart[index].name : product.name;
-        message += `${index + 1}. ${prodName}\n`;
-        message += `   - المقاس: ${item.selectedSize}\n`;
-        if (item.selectedColor) message += `   - اللون: ${item.selectedColor}\n`;
-        message += `   - الكمية: ${item.quantity}\n`;
-        message += `   - الصورة: ${getImageUrl(item.customerPhoto)}\n\n`;
+
+        // Find color name if available
+        const colorObj = Array.isArray(product.colors) ? product.colors.find((c: any) => (c.hex || c) === item.selectedColor) : null;
+        const colorName = colorObj?.name || "";
+        const colorValue = item.selectedColor;
+        const colorDisplay = colorName ? `${colorName} (${colorValue})` : colorValue;
+
+        message += `📦 *${prodName}*\n`;
+        message += `📏 *المقاس:* ${item.selectedSize}\n`;
+        if (item.selectedColor) message += `🎨 *اللون:* ${colorDisplay}\n`;
+        message += `🔢 *الكمية:* ${item.quantity}\n`;
+        message += `🖼️ *الصورة:* ${getImageUrl(item.customerPhoto)}\n\n`;
       });
 
       message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n`;
