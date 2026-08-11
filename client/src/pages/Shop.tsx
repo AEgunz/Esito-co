@@ -215,7 +215,24 @@ const Shop = () => {
                     <div className={`${mobileCols === 2 ? 'px-2' : 'px-4'} flex justify-between items-start gap-2`}>
                       <div className="space-y-1 min-w-0">
                         <h3 className={`${mobileCols === 2 ? 'text-sm' : 'text-lg'} font-black text-gray-900 leading-tight truncate`}>{product.name}</h3>
-                        <p className="text-gray-400 font-bold uppercase tracking-tighter text-[9px]">{product.size}</p>
+                        <div className="flex items-center gap-2">
+                           <p className="text-gray-400 font-bold uppercase tracking-tighter text-[9px]">{product.size}</p>
+                           {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
+                             <>
+                               <span className="w-1 h-1 rounded-full bg-gray-300" />
+                               <div className="flex gap-1">
+                                 {product.colors.slice(0, 4).map((c: any, idx: number) => (
+                                   <div
+                                     key={idx}
+                                     className="w-2.5 h-2.5 rounded-full border border-gray-200"
+                                     style={{ backgroundColor: c.hex || c }}
+                                   />
+                                 ))}
+                                 {product.colors.length > 4 && <span className="text-[8px] font-black text-gray-400">+{product.colors.length - 4}</span>}
+                               </div>
+                             </>
+                           )}
+                        </div>
                       </div>
                       <div className="flex flex-col items-end shrink-0">
                         <span className={`${mobileCols === 2 ? 'text-base' : 'text-xl'} font-black text-blue-600`}>{Number(product.price).toFixed(0)} {t('common.dh')}</span>
