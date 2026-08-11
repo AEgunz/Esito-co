@@ -192,7 +192,9 @@ const Editor = () => {
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
       alert('Order placed successfully! Redirecting to WhatsApp...');
-      window.open(whatsappUrl, '_blank');
+
+      // Use window.location.href for better mobile compatibility
+      window.location.href = whatsappUrl;
 
       clearCart();
       navigate('/order-success');
