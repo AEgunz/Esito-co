@@ -57,11 +57,9 @@ const Editor = () => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
 
-    // Use the custom domain for display if available, otherwise fallback to server URL
-    const publicDomain = "https://www.estilo-co.ma";
-    const baseUrl = window.location.hostname.includes('estilo-co.ma')
-      ? publicDomain
-      : (SERVER_URL === 'http://localhost:5000' ? 'http://localhost:5000' : SERVER_URL);
+    const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
+      ? `https://${window.location.hostname.replace('www.', '').replace('estilo-co.ma', 'esito-co-production.up.railway.app')}`
+      : SERVER_URL;
 
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
     return `${baseUrl}${cleanUrl}`;
@@ -185,7 +183,7 @@ const Editor = () => {
         message += `📏 *المقاس:* ${item.selectedSize}\n`;
         if (item.selectedColor) message += `🎨 *اللون:* ${colorDisplay}\n`;
         message += `🔢 *الكمية:* ${item.quantity}\n`;
-        message += `🖼️ *الصورة:* ${getImageUrl(item.customerPhoto)}\n\n`;
+        message += `🖼️ *الصورة:* ${getImageUrl(item.customerPhoto).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n\n`;
       });
 
       message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n`;

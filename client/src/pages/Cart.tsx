@@ -25,10 +25,9 @@ const Cart = () => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
 
-    const publicDomain = "https://www.estilo-co.ma";
-    const baseUrl = window.location.hostname.includes('estilo-co.ma')
-      ? publicDomain
-      : (SERVER_URL === 'http://localhost:5000' ? 'http://localhost:5000' : SERVER_URL);
+    const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
+      ? `https://${window.location.hostname.replace('www.', '').replace('estilo-co.ma', 'esito-co-production.up.railway.app')}`
+      : SERVER_URL;
 
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
@@ -108,7 +107,7 @@ const Cart = () => {
         message += `📏 *المقاس:* ${item.selectedSize}\n`;
         if (item.selectedColor) message += `🎨 *اللون:* ${item.selectedColor}\n`;
         message += `🔢 *الكمية:* ${item.quantity}\n`;
-        message += `🖼️ *الصورة:* ${getImageUrl(item.image)}\n\n`;
+        message += `🖼️ *الصورة:* ${getImageUrl(item.image).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n\n`;
       });
 
       message += `*المجموع الكلي:* ${grandTotal.toFixed(0)} DH\n`;
