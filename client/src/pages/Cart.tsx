@@ -21,6 +21,18 @@ const Cart = () => {
 
   const [deliveryFee, setDeliveryFee] = useState(30.00); // Default
 
+  const getImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+
+    const publicDomain = "https://www.estilo-co.ma";
+    const baseUrl = window.location.hostname.includes('estilo-co.ma')
+      ? publicDomain
+      : (SERVER_URL === 'http://localhost:5000' ? 'http://localhost:5000' : SERVER_URL);
+
+    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   useEffect(() => {
     const user = localStorage.getItem('user');
     if (user) {
