@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-export const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
+const isProd = window.location.hostname.includes('estilo-co.ma') || window.location.hostname.includes('railway.app');
+const PROD_URL = 'https://esito-co-production.up.railway.app';
+
+const API_URL = import.meta.env.VITE_API_URL || (isProd ? `${PROD_URL}/api` : 'http://localhost:5000/api');
+export const SERVER_URL = import.meta.env.VITE_SERVER_URL || (isProd ? PROD_URL : 'http://localhost:5000');
 
 const api = axios.create({
   baseURL: API_URL,

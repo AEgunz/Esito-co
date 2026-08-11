@@ -198,8 +198,9 @@ const Editor = () => {
 
       clearCart();
       navigate('/order-success');
-    } catch (error) {
-      alert('Error placing order');
+    } catch (error: any) {
+      console.error('Order Error:', error);
+      alert(`Error: ${error.response?.data?.message || 'Could not connect to server. Check your connection.'}`);
     } finally {
       setIsSubmitting(false);
     }
