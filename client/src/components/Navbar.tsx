@@ -117,13 +117,29 @@ const Navbar = () => {
 
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2 text-gray-400 hover:text-black transition"
+              className="relative p-2 text-gray-400 hover:text-black transition group"
             >
-              <ShoppingCart className="h-6 w-6" />
+              <ShoppingCart className="h-6 w-6 transition-transform group-hover:scale-110" />
               {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white">
-                  {cartCount}
-                </span>
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  key={cartCount}
+                  className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg shadow-blue-200"
+                >
+                  <motion.span
+                    animate={{
+                      scale: [1, 1.2, 1],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }}
+                  >
+                    {cartCount}
+                  </motion.span>
+                </motion.span>
               )}
             </button>
 
