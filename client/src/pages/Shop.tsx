@@ -19,7 +19,7 @@ const Shop = () => {
 
     // Auto-detect server URL if VITE_SERVER_URL is missing
     const baseUrl = SERVER_URL === 'http://localhost:5000' && window.location.hostname !== 'localhost'
-      ? `https://${window.location.hostname.replace('client', 'server')}`
+      ? `https://${window.location.hostname.replace('www.', '').replace('estilo-co.ma', 'esito-co-production.up.railway.app')}`
       : SERVER_URL;
 
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
@@ -120,9 +120,10 @@ const Shop = () => {
                     >
                         <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform rtl:rotate-180" /> {t('shop.back')}
                     </button>
-                    <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-none">{selectedCategory.name}</h2>
-                    <p className="text-gray-400 font-medium italic text-sm">{selectedCategory.description}</p>
+                    <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-none text-start">{selectedCategory.name}</h2>
+                    <p className="text-gray-400 font-medium italic text-sm text-start">{selectedCategory.description}</p>
                 </div>
+
                 <div className="bg-gray-50 p-1.5 rounded-full border border-gray-100 flex items-center gap-1 w-fit">
                     <button
                       onClick={() => setMobileCols(1)}
@@ -137,7 +138,7 @@ const Shop = () => {
                       <Grid2X2 className="h-4 w-4" />
                     </button>
                     <div className="w-px h-4 bg-gray-200 mx-1" />
-                    <div className="px-3 flex items-center gap-2">
+                    <div className="px-3 flex items-center gap-2 text-start">
                       <LayoutGrid className="h-3.5 w-3.5 text-gray-400" />
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{filteredProducts.length} {t('shop.shapes')}</span>
                     </div>
@@ -212,34 +213,33 @@ const Shop = () => {
                          <span className="bg-white text-black px-6 py-2 md:px-8 md:py-3 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
                       </div>
                     </div>
-                    <div className={`${mobileCols === 2 ? 'px-2' : 'px-4'} flex justify-between items-start gap-2`}>
-                      <div className="space-y-1 min-w-0">
-                        <h3 className={`${mobileCols === 2 ? 'text-sm' : 'text-lg'} font-black text-gray-900 leading-tight truncate`}>{product.name}</h3>
-                        <div className="flex items-center gap-2">
-                           <p className="text-gray-400 font-bold uppercase tracking-tighter text-[9px]">{product.size}</p>
-                           {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
-                             <>
-                               <span className="w-1 h-1 rounded-full bg-gray-300" />
-                               <div className="flex gap-1">
-                                 {product.colors.slice(0, 4).map((c: any, idx: number) => (
-                                   <div
-                                     key={idx}
-                                     className="w-2.5 h-2.5 rounded-full border border-gray-200"
-                                     style={{ backgroundColor: c.hex || c }}
-                                   />
-                                 ))}
-                                 {product.colors.length > 4 && <span className="text-[8px] font-black text-gray-400">+{product.colors.length - 4}</span>}
-                               </div>
-                             </>
-                           )}
-                        </div>
+                    <div className={`${mobileCols === 2 ? 'px-2 py-1' : 'px-4'} flex flex-col gap-1 text-start`}>
+                      <div className="flex justify-between items-start gap-1">
+                        <h3 className={`${mobileCols === 2 ? 'text-[11px]' : 'text-lg'} font-black text-gray-900 leading-tight truncate flex-1`}>{product.name}</h3>
+                        <span className={`${mobileCols === 2 ? 'text-xs' : 'text-xl'} font-black text-blue-600 shrink-0`}>{Number(product.price).toFixed(0)} {t('common.dh')}</span>
                       </div>
-                      <div className="flex flex-col items-end shrink-0">
-                        <span className={`${mobileCols === 2 ? 'text-base' : 'text-xl'} font-black text-blue-600`}>{Number(product.price).toFixed(0)} {t('common.dh')}</span>
-                        {product.oldPrice && (
-                            <span className="text-gray-400 text-[10px] line-through font-bold">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-gray-400 font-bold uppercase tracking-tighter text-[8px] truncate max-w-[60%]">
+                          {product.size}
+                        </p>
+                        {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
+                          <div className="flex gap-0.5 shrink-0">
+                            {product.colors.slice(0, 3).map((c: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="w-2 h-2 rounded-full border border-gray-200"
+                                style={{ backgroundColor: c.hex || c }}
+                              />
+                            ))}
+                            {product.colors.length > 3 && <span className="text-[7px] font-black text-gray-400">+{product.colors.length - 3}</span>}
+                          </div>
                         )}
                       </div>
+
+                      {product.oldPrice && mobileCols === 1 && (
+                        <span className="text-gray-400 text-[10px] line-through font-bold">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>
+                      )}
                     </div>
                   </Link>
                 </motion.div>
