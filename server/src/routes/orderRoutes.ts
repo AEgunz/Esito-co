@@ -4,7 +4,7 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth';
 
 const router = Router();
 
-router.post('/', authenticate, createOrder);
+router.post('/', createOrder); // Allow guest checkout
 router.post('/ameex-webhook', ameexWebhook); // Public webhook endpoint
 router.get('/my-orders', authenticate, getMyOrders);
 router.get('/all', authenticate, authorizeAdmin, getAllOrders);
