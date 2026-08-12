@@ -23,7 +23,7 @@ class AmeexService {
     try {
       const form = new FormData();
       form.append('type', 'SIMPLE');
-      form.append('business', '2'); // As per curl example
+      form.append('business', '2');
       form.append('order_num', order.id.slice(0, 8));
       form.append('replace', 'true');
       form.append('exchange_code', '');
@@ -52,7 +52,6 @@ class AmeexService {
     try {
       const form = new FormData();
       Object.keys(data).forEach(key => form.append(key, String(data[key])));
-
       const response = await axios.post(`${this.baseUrl}/Action/Type/Edit?ParcelCode=${parcelCode}`, form, {
         headers: this.getHeaders(form.getHeaders())
       });
@@ -176,10 +175,8 @@ class AmeexService {
         'date[to]': new Date().toLocaleDateString('en-US'),
         all_data: '1'
       };
-
       const finalParams = { ...defaultParams, ...params };
       Object.keys(finalParams).forEach(key => form.append(key, String(finalParams[key])));
-
       const response = await axios.post(`${this.baseUrl}/Json`, form, {
         headers: this.getHeaders(form.getHeaders())
       });
@@ -189,7 +186,6 @@ class AmeexService {
     }
   }
 
-  // Delivery Notes Methods
   async addDeliveryNote() {
     try {
       const form = new FormData();
@@ -244,7 +240,6 @@ class AmeexService {
       form.append('p_address', data.address);
       form.append('p_phone', data.phone.replace(/\s/g, ''));
       form.append('p_note', data.note || '');
-
       const response = await axios.post('https://api.ameex.app/customer/Delivery/PickupRequests/Action/Type/Add', form, {
         headers: this.getHeaders(form.getHeaders())
       });
@@ -253,7 +248,6 @@ class AmeexService {
       throw error;
     }
   }
-}
 
   mapStatus(ameexStatus: string): string {
     const statusMap: Record<string, string> = {
