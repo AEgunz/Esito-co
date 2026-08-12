@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/axios';
-import { Package, Search, Truck, Info, RefreshCw, Trash2, List, MapPin, CheckSquare, Square, FileText, Printer, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Package, Search, Truck, Info, RefreshCw, Trash2, List, MapPin, CheckSquare, Square, FileText, Printer, X, AlertCircle } from 'lucide-react';
 
 const AdminAmeex = () => {
   const queryClient = useQueryClient();
@@ -11,6 +10,14 @@ const AdminAmeex = () => {
   const [selectedForNote, setSelectedForNote] = useState<string[]>([]);
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
   const [pickupData, setPickupData] = useState({ city: '1', address: '', phone: '', note: '' });
+
+  const { data: deliveryCities } = useQuery({
+    queryKey: ['delivery-cities'],
+    queryFn: async () => {
+        const res = await api.get('/delivery');
+        return Array.isArray(res.data) ? res.data : [];
+    }
+  });
 
   const { data: parcels, isLoading: listLoading } = useQuery({
     queryKey: ['ameex-parcels'],
@@ -24,13 +31,9 @@ const AdminAmeex = () => {
 
   const createNoteMutation = useMutation({
     mutationFn: async () => {
-        // 1. Add Note
         const addRes = await api.post('/ameex/notes/add');
         const ref = addRes.data.ref || addRes.data.message?.match(/Ref : ([\w\d]+)/)?.[1];
-
         if (!ref) throw new Error('Could not get Note Reference');
-
-        // 2. Add Selected Parcels
         await api.post(`/ameex/notes/add-parcels?ref=${ref}`, { parcels: selectedForNote });
         return ref;
     },
@@ -67,8 +70,7 @@ const AdminAmeex = () => {
     },
     onError: (err: any) => {
         const msg = err.response?.data?.message || err.message;
-        const details = err.response?.data?.details?.message || "";
-        alert(`Failed: ${msg} ${details}`);
+        alert(`Failed: ${msg}`);
     }
   });
 
@@ -77,11 +79,11 @@ const AdminAmeex = () => {
   };
 
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-10 pb-20 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div>
+        <div className="text-start">
           <h1 className="text-4xl font-black tracking-tight text-gray-900 uppercase italic">AMEEX Shipping</h1>
-          <p className="text-gray-400 font-medium">Manage parcels and create Delivery Notes (Bon de Livraison)</p>
+          <p className="text-gray-400 font-medium">Manage parcels and create Delivery Notes</p>
         </div>
 
         <div className="flex gap-4 w-full md:w-auto">
@@ -117,9 +119,7 @@ const AdminAmeex = () => {
           <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
                <h2 className="text-xl font-black uppercase italic flex items-center gap-2"><List className="h-5 w-5 text-blue-600" /> All Parcels</h2>
-               <div className="flex items-center gap-2">
-                   <button onClick={() => queryClient.invalidateQueries({ queryKey: ['ameex-parcels'] })} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><RefreshCw className="h-4 w-4 text-gray-400" /></button>
-               </div>
+               <button onClick={() => queryClient.invalidateQueries({ queryKey: ['ameex-parcels'] })} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><RefreshCw className="h-4 w-4 text-gray-400" /></button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -144,11 +144,11 @@ const AdminAmeex = () => {
                         <p className="font-black text-gray-900">{parcel.code}</p>
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Order: #{parcel.order_num}</p>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-8 py-6 text-start">
                         <p className="font-bold text-gray-700">{parcel.receiver}</p>
                         <p className="text-[10px] font-medium text-gray-400">{parcel.phone}</p>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-8 py-6 text-start">
                         <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${
                           parcel.statut === 'Livre' ? 'bg-green-100 text-green-600' :
                           parcel.statut === 'Annule' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
@@ -172,17 +172,9 @@ const AdminAmeex = () => {
           </div>
         </div>
 
-        {/* Selected Details */}
-        <div className="lg:col-span-1">
-          <AnimatePresence mode="wait">
+        <div className="lg:col-span-1 text-start">
             {selectedParcel ? (
-              <motion.div
-                key={selectedParcel.code}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="bg-black text-white p-10 rounded-[48px] shadow-2xl sticky top-24 space-y-8 border border-white/5"
-              >
+              <div className="bg-black text-white p-10 rounded-[48px] shadow-2xl sticky top-24 space-y-8 border border-white/5 text-start">
                 <div className="flex justify-between items-start">
                   <div className="bg-blue-600 p-4 rounded-3xl shadow-xl shadow-blue-500/20">
                     <Truck className="h-8 w-8 text-white" />
@@ -191,14 +183,12 @@ const AdminAmeex = () => {
                     <X className="h-6 w-6" />
                   </button>
                 </div>
-
-                <div className="space-y-2">
+                <div className="space-y-2 text-start">
                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">Parcel Details</p>
                   <h3 className="text-3xl font-black italic uppercase tracking-tighter">{selectedParcel.code}</h3>
                 </div>
-
-                <div className="space-y-6">
-                  <div className="grid gap-4 bg-white/5 p-6 rounded-3xl border border-white/10">
+                <div className="space-y-6 text-start">
+                  <div className="grid gap-4 bg-white/5 p-6 rounded-3xl border border-white/10 text-start">
                     <div className="flex items-center gap-4">
                       <div className="bg-white/10 p-2.5 rounded-xl"><Package className="h-4 w-4 text-gray-400" /></div>
                       <div>
@@ -213,16 +203,15 @@ const AdminAmeex = () => {
                         <p className="text-sm font-bold">{selectedParcel.address}, {selectedParcel.city}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 text-start">
                       <div className="bg-white/10 p-2.5 rounded-xl"><RefreshCw className="h-4 w-4 text-gray-400" /></div>
-                      <div>
+                      <div className="text-start">
                         <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Status</p>
                         <p className="text-sm font-bold text-blue-400">{selectedParcel.statut}</p>
                       </div>
                     </div>
                   </div>
                 </div>
-
                 <div className="pt-4 space-y-3">
                    <button
                      onClick={() => window.open(`https://api.ameex.app/customer/Delivery/DeliveryNotes/Print/Type/Labels?Ref=${selectedParcel.code}&LabelType=Label_100_100`, '_blank')}
@@ -231,66 +220,61 @@ const AdminAmeex = () => {
                      <Printer className="h-4 w-4" /> Print Label
                    </button>
                 </div>
-              </motion.div>
+              </div>
             ) : (
               <div className="h-[400px] bg-gray-50 rounded-[48px] border border-dashed border-gray-200 flex flex-col items-center justify-center p-10 text-center space-y-4">
                 <Truck className="h-16 w-16 text-gray-200" />
                 <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] italic">Select a parcel to view details or select multiple to create a Delivery Note</p>
               </div>
             )}
-          </AnimatePresence>
         </div>
       </div>
 
-      <AnimatePresence>
-        {isPickupModalOpen && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
-                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="h-6 w-6 text-gray-400" /></button>
-                </div>
-
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
-                        <select
-                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none"
-                            value={pickupData.city}
-                            onChange={e => setPickupData({...pickupData, city: e.target.value})}
-                        >
-                            <option value="">Select City...</option>
-                            {deliveryCities?.filter((c: any) => c.ameexId).map((c: any) => (
-                                <option key={c.id} value={c.ameexId}>{c.city}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
-                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
-                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
-                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
-                    </div>
-                </div>
-
-                <button
-                  onClick={() => pickupMutation.mutate(pickupData)}
-                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
-                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
-                >
-                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
-                </button>
-            </motion.div>
+      {isPickupModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+          <div className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8 text-start">
+              <div className="flex justify-between items-center text-start">
+                  <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                  <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="h-6 w-6 text-gray-400" /></button>
+              </div>
+              <div className="space-y-4 text-start">
+                  <div className="space-y-2 text-start">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                      <select
+                          className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none"
+                          value={pickupData.city}
+                          onChange={e => setPickupData({...pickupData, city: e.target.value})}
+                      >
+                          <option value="">Select City...</option>
+                          {deliveryCities?.filter((c: any) => c.ameexId).map((c: any) => (
+                              <option key={c.id} value={c.ameexId}>{c.city}</option>
+                          ))}
+                      </select>
+                  </div>
+                  <div className="space-y-2 text-start">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                      <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                  </div>
+                  <div className="space-y-2 text-start">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                      <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                  </div>
+                  <div className="space-y-2 text-start">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                      <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                  </div>
+              </div>
+              <button
+                onClick={() => pickupMutation.mutate(pickupData)}
+                disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+              </button>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };
