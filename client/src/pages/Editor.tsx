@@ -27,6 +27,8 @@ const Editor = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '', note: '' });
+  const [citySearch, setCitySearch] = useState('');
+  const [isCityListOpen, setIsCityListOpen] = useState(false);
   const [customText, setCustomText] = useState('');
   const [customPhotos, setCustomPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -46,6 +48,10 @@ const Editor = () => {
       }
     }
   });
+
+  const filteredCities = citySearch.length >= 1
+    ? deliveryCities?.filter((c: any) => c.city.toLowerCase().includes(citySearch.toLowerCase()))
+    : [];
 
   const { data: product, isLoading, isError } = useQuery({
     queryKey: ['product', productId],
@@ -703,13 +709,54 @@ const Editor = () => {
             <div className="grid gap-4 text-start">
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.fullName')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.phone')} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+
               <div className="relative text-start">
-                <select className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold cursor-pointer appearance-none" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})}>
-                    <option value="" className="bg-gray-900">{t('editor.city')}</option>
-                    {deliveryCities?.map((c:any) => <option key={c.id} value={c.city} className="bg-gray-900">{c.city}</option>)}
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"><ChevronRight className="h-4 w-4 rotate-90" /></div>
+                <div className="relative">
+                    <input
+                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner"
+                        placeholder={formData.city || t('editor.city')}
+                        value={citySearch}
+                        onChange={(e) => {
+                            setCitySearch(e.target.value);
+                            setIsCityListOpen(true);
+                        }}
+                        onFocus={() => setIsCityListOpen(true)}
+                    />
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"><ChevronRight className="h-4 w-4 rotate-90" /></div>
+                </div>
+
+                <AnimatePresence>
+                    {isCityListOpen && citySearch.length >= 1 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute z-[60] left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-gray-900 border border-white/10 rounded-2xl shadow-2xl py-2 custom-scrollbar"
+                        >
+                            {filteredCities?.length > 0 ? (
+                                filteredCities.map((c: any) => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData({...formData, city: c.city});
+                                            setCitySearch(c.city);
+                                            setIsCityListOpen(false);
+                                        }}
+                                        className="w-full text-left px-6 py-3 text-white hover:bg-blue-600 font-bold text-sm transition-colors flex justify-between items-center"
+                                    >
+                                        <span>{c.city}</span>
+                                        <span className="text-[10px] text-gray-400 font-black">{Number(c.fee).toFixed(0)} DH</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="px-6 py-4 text-gray-500 font-bold text-xs italic">No cities found...</div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
               </div>
+
               <textarea className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.address')} rows={2} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.note')} value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
             </div>

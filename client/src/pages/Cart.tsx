@@ -19,6 +19,21 @@ const Cart = () => {
     note: ''
   });
 
+  const [citySearch, setCitySearch] = useState('');
+  const [isCityListOpen, setIsCityListOpen] = useState(false);
+
+  const { data: deliveryCities } = useQuery({
+    queryKey: ['delivery-cities'],
+    queryFn: async () => {
+        const res = await api.get('/delivery');
+        return Array.isArray(res.data) ? res.data : [];
+    }
+  });
+
+  const filteredCities = citySearch.length >= 1
+    ? deliveryCities?.filter((c: any) => c.city.toLowerCase().includes(citySearch.toLowerCase()))
+    : [];
+
   const [deliveryFee, setDeliveryFee] = useState(30.00); // Default
 
   const getImageUrl = (url: string) => {
@@ -213,14 +228,50 @@ const Cart = () => {
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.city')}</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Casablanca"
-                  className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition font-bold"
-                  value={formData.city}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                />
+                <div className="relative">
+                    <input
+                        type="text"
+                        required
+                        placeholder={formData.city || "e.g. Casablanca"}
+                        className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition font-bold"
+                        value={citySearch}
+                        onChange={(e) => {
+                            setCitySearch(e.target.value);
+                            setIsCityListOpen(true);
+                        }}
+                        onFocus={() => setIsCityListOpen(true)}
+                    />
+                    <AnimatePresence>
+                        {isCityListOpen && citySearch.length >= 1 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute z-[60] left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 custom-scrollbar"
+                            >
+                                {filteredCities?.length > 0 ? (
+                                    filteredCities.map((c: any) => (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({...formData, city: c.city});
+                                                setCitySearch(c.city);
+                                                setIsCityListOpen(false);
+                                            }}
+                                            className="w-full text-left px-6 py-3 hover:bg-gray-50 font-bold text-sm transition-colors flex justify-between items-center"
+                                        >
+                                            <span className="text-gray-900">{c.city}</span>
+                                            <span className="text-[10px] text-gray-400 font-black">{Number(c.fee).toFixed(0)} DH</span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-6 py-4 text-gray-500 font-bold text-xs italic">No cities found...</div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.phone')}</label>
