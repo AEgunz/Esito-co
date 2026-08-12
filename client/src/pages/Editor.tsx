@@ -356,51 +356,62 @@ const Editor = () => {
               {product.oldPrice && <span className="text-2xl text-gray-300 line-through font-black">{Number(product.oldPrice).toFixed(0)} {t('common.dh')}</span>}
             </div>
 
-            {/* Professional Description */}
-            <div className="pt-4 space-y-4 text-start">
-              <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium">
-                {product.description}
-              </p>
+            {/* Professional Description (Show only for non-custom products, mostly T-shirts) */}
+            {!product.requiresCustomPhotos && (
+              <div className="pt-4 space-y-4 text-start">
+                <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium">
+                  {product.description}
+                </p>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
-                  <div className="bg-green-50 p-2 rounded-lg text-start">
-                    <Check className="h-4 w-4 text-green-600" />
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                    <div className="bg-green-50 p-2 rounded-lg text-start">
+                      <Check className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div className="text-start">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.material')}</p>
+                      <p className="text-xs font-bold text-gray-900">{t('editor.materialValue')}</p>
+                    </div>
                   </div>
-                  <div className="text-start">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.material')}</p>
-                    <p className="text-xs font-bold text-gray-900">{t('editor.materialValue')}</p>
+                  <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                    <div className="bg-blue-50 p-2 rounded-lg text-start">
+                      <Check className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="text-start">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.printQuality')}</p>
+                      <p className="text-xs font-bold text-gray-900">{t('editor.printQualityValue')}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm">
-                  <div className="bg-blue-50 p-2 rounded-lg text-start">
-                    <Check className="h-4 w-4 text-blue-600" />
+                  <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm text-start">
+                    <div className="bg-amber-50 p-2 rounded-lg">
+                      <RefreshCw className="h-4 w-4 text-amber-600" />
+                    </div>
+                    <div className="text-start">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.durability')}</p>
+                      <p className="text-xs font-bold text-gray-900">{t('editor.durabilityValue')}</p>
+                    </div>
                   </div>
-                  <div className="text-start">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.printQuality')}</p>
-                    <p className="text-xs font-bold text-gray-900">{t('editor.printQualityValue')}</p>
-                  </div>
-                </div>
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm text-start">
-                  <div className="bg-amber-50 p-2 rounded-lg">
-                    <RefreshCw className="h-4 w-4 text-amber-600" />
-                  </div>
-                  <div className="text-start">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.durability')}</p>
-                    <p className="text-xs font-bold text-gray-900">{t('editor.durabilityValue')}</p>
-                  </div>
-                </div>
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm text-start">
-                  <div className="bg-purple-50 p-2 rounded-lg">
-                    <User className="h-4 w-4 text-purple-600" />
-                  </div>
-                  <div className="text-start">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.fitType')}</p>
-                    <p className="text-xs font-bold text-gray-900">{t('editor.fitTypeValue')}</p>
+                  <div className="bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 shadow-sm text-start">
+                    <div className="bg-purple-50 p-2 rounded-lg">
+                      <User className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div className="text-start">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('editor.fitType')}</p>
+                      <p className="text-xs font-bold text-gray-900">{t('editor.fitTypeValue')}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Simple Description for Custom Products (Keychains, Mugs) */}
+            {product.requiresCustomPhotos && (
+              <div className="pt-4 text-start">
+                <p className="text-gray-600 leading-relaxed text-sm md:text-base font-medium bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                  {product.description}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="bg-white p-6 md:p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-8 text-start">
