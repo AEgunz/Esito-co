@@ -19,7 +19,7 @@ const AdminProducts = () => {
   const [formData, setFormData] = useState({
     name: '', description: '', price: '', oldPrice: '', size: '',
     categoryId: '', subCategoryId: '', childCategoryId: '', image: '', images: [] as string[],
-    colors: [] as {hex: string, image: string}[],
+    colors: [] as {hex: string, name: string, image: string}[],
     requiresCustomPhotos: false, photoCount: 0
   });
 
@@ -66,11 +66,12 @@ const AdminProducts = () => {
     if (product) {
       setEditingId(product.id);
 
-      // Fix: Normalize colors to the new object format if they are just strings
+      // Normalize colors to include 'name'
       const rawColors = product.colors || [];
-      const normalizedColors = rawColors.map((c: any) =>
-        typeof c === 'string' ? { hex: c, image: '' } : c
-      );
+      const normalizedColors = rawColors.map((c: any) => {
+        if (typeof c === 'string') return { hex: c, name: '', image: '' };
+        return { hex: c.hex || '', name: c.name || '', image: c.image || '' };
+      });
 
       setFormData({
         name: product.name, description: product.description || '',
