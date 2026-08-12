@@ -23,4 +23,10 @@ router.get('/relaunch', relaunchParcel);
 router.post('/relaunch-new', relaunchNew);
 router.post('/list', getParcelsList);
 
+// Delivery Notes
+router.post('/notes/add', addDeliveryNote);
+router.post('/notes/add-parcels', addParcelsToNote);
+router.delete('/notes/delete', deleteDeliveryNote);
+router.get('/notes/print', getPrintUrls);
+
 export default router;

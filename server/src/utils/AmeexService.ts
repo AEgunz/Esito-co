@@ -189,6 +189,52 @@ class AmeexService {
     }
   }
 
+  // Delivery Notes Methods
+  async addDeliveryNote() {
+    try {
+      const form = new FormData();
+      form.append('business', '2');
+      const response = await axios.post('https://api.ameex.app/customer/Delivery/DeliveryNotes/Action/Type/Add', form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async addParcelsToNote(ref: string, parcels: string[]) {
+    try {
+      const form = new FormData();
+      parcels.forEach(p => form.append('parcels[]', p));
+      const response = await axios.post(`https://api.ameex.app/customer/Delivery/DeliveryNotes/Action/Type/AddParcels?Ref=${ref}`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async deleteDeliveryNote(ref: string) {
+    try {
+      const response = await axios.delete(`https://api.ameex.app/customer/Delivery/DeliveryNotes/Action/Type/Delete?Ref=${ref}`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  getPrintLabelUrl(ref: string, labelType: string = 'Label_100_100') {
+    return `https://api.ameex.app/customer/Delivery/DeliveryNotes/Print/Type/Labels?Ref=${ref}&LabelType=${labelType}`;
+  }
+
+  getPrintNoteUrl(ref: string) {
+    return `https://api.ameex.app/customer/Delivery/DeliveryNotes/Print/Type/Note?Ref=${ref}`;
+  }
+
   mapStatus(ameexStatus: string): string {
     const statusMap: Record<string, string> = {
         'nouveau': 'PENDING',
