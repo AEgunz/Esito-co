@@ -149,3 +149,12 @@ export const getPrintUrls = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const addPickupRequest = async (req: Request, res: Response) => {
+  try {
+    const data = await AmeexService.addPickupRequest(req.body);
+    res.json(data);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

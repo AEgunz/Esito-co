@@ -28,5 +28,6 @@ router.post('/notes/add', addDeliveryNote);
 router.post('/notes/add-parcels', addParcelsToNote);
 router.delete('/notes/delete', deleteDeliveryNote);
 router.get('/notes/print', getPrintUrls);
+router.post('/pickup/add', addPickupRequest);
 
 export default router;

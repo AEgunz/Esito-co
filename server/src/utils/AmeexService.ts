@@ -235,6 +235,26 @@ class AmeexService {
     return `https://api.ameex.app/customer/Delivery/DeliveryNotes/Print/Type/Note?Ref=${ref}`;
   }
 
+  async addPickupRequest(data: any) {
+    try {
+      const form = new FormData();
+      form.append('mdl_business', '2');
+      form.append('mdl_type', 'PARCEL_M');
+      form.append('mdl_city', String(data.city));
+      form.append('p_address', data.address);
+      form.append('p_phone', data.phone.replace(/\s/g, ''));
+      form.append('p_note', data.note || '');
+
+      const response = await axios.post('https://api.ameex.app/customer/Delivery/PickupRequests/Action/Type/Add', form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+}
+
   mapStatus(ameexStatus: string): string {
     const statusMap: Record<string, string> = {
         'nouveau': 'PENDING',

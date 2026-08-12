@@ -10,6 +10,13 @@ const AdminAmeex = () => {
   const [selectedParcel, setSelectedParcel] = useState<any>(null);
   const [selectedForNote, setSelectedForNote] = useState<string[]>([]);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
+  const [pickupData, setPickupData] = useState({ city: '1', address: '', phone: '', note: '' });
+
+  const { data: deliveryCities } = useQuery({
+    queryKey: ['delivery-cities'],
+    queryFn: async () => (await api.get('/delivery')).data
+  });
 
   const { data: parcels, isLoading: listLoading } = useQuery({
     queryKey: ['ameex-parcels'],
@@ -47,15 +54,82 @@ const AdminAmeex = () => {
     setSelectedForNote(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]);
   };
 
+  const relaunchMutation = useMutation({
+    mutationFn: (code: string) => api.get(`/ameex/relaunch?parcelCode=${code}`),
+    onSuccess: () => alert('Parcel relaunched successfully')
+  });
+
+  const pickupMutation = useMutation({
+    mutationFn: (data: any) => api.post('/ameex/pickup/add', data),
+    onSuccess: () => {
+        setIsPickupModalOpen(false);
+        alert('Pickup Request Sent Successfully!');
+    },
+    onError: (err: any) => alert('Failed: ' + (err.response?.data?.message || err.message))
+  });
+
   return (
     <div className="space-y-10 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tight text-gray-900 uppercase italic">AMEEX Shipping</h1>
           <p className="text-gray-400 font-medium">Manage parcels and create Delivery Notes (Bon de Livraison)</p>
-        </div>
+          </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
 
         <div className="flex gap-4 w-full md:w-auto">
+          <button
+            onClick={() => setIsPickupModalOpen(true)}
+            className="bg-white text-black border-2 border-black px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-50 transition shadow-md flex items-center gap-2"
+          >
+            <Truck className="h-5 w-5" /> Request Pickup
+          </button>
           {selectedForNote.length > 0 && (
               <button
                 onClick={() => createNoteMutation.mutate()}
@@ -73,9 +147,150 @@ const AdminAmeex = () => {
               onChange={(e) => setSearchCode(e.target.value)}
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+    </div>
+          </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
         </div>
-      </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
 
       <div className="grid lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-6">
@@ -84,8 +299,102 @@ const AdminAmeex = () => {
                <h2 className="text-xl font-black uppercase italic flex items-center gap-2"><List className="h-5 w-5 text-blue-600" /> All Parcels</h2>
                <div className="flex items-center gap-2">
                    <button onClick={() => queryClient.invalidateQueries({ queryKey: ['ameex-parcels'] })} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><RefreshCw className="h-4 w-4 text-gray-400" /></button>
-               </div>
-            </div>
+                 </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+              </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50/50">
@@ -124,16 +433,204 @@ const AdminAmeex = () => {
                       <td className="px-8 py-6 text-right">
                         <div className="flex justify-end gap-2">
                           <button onClick={() => infoMutation.mutate(parcel.code)} className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-black hover:text-white transition-all"><Info className="h-4 w-4" /></button>
-                        </div>
+                          </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {listLoading && <div className="p-20 text-center text-gray-300 font-bold uppercase tracking-widest animate-pulse">Loading Parcels...</div>}
-            </div>
+              </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
           </div>
-        </div>
+        )}
+      </AnimatePresence>
+    </div>
+            </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+          </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
 
         {/* Selected Details */}
         <div className="lg:col-span-1">
@@ -149,16 +646,157 @@ const AdminAmeex = () => {
                 <div className="flex justify-between items-start">
                   <div className="bg-blue-600 p-4 rounded-3xl shadow-xl shadow-blue-500/20">
                     <Truck className="h-8 w-8 text-white" />
-                  </div>
+                    </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
                   <button onClick={() => setSelectedParcel(null)} className="text-gray-500 hover:text-white p-2">
                     <XIcon className="h-6 w-6" />
                   </button>
+                  </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
                 </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
 
                 <div className="space-y-2">
                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">Parcel Details</p>
                   <h3 className="text-3xl font-black italic uppercase tracking-tighter">{selectedParcel.code}</h3>
+                  </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
                 </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
 
                 <div className="space-y-6">
                   <div className="grid gap-4 bg-white/5 p-6 rounded-3xl border border-white/10">
@@ -167,24 +805,400 @@ const AdminAmeex = () => {
                       <div>
                         <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Receiver</p>
                         <p className="text-sm font-bold">{selectedParcel.receiver}</p>
-                      </div>
+                        </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+                      </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
                     <div className="flex items-center gap-4">
                       <div className="bg-white/10 p-2.5 rounded-xl"><MapPin className="h-4 w-4 text-gray-400" /></div>
                       <div>
                         <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Address</p>
                         <p className="text-sm font-bold">{selectedParcel.address}, {selectedParcel.city}</p>
-                      </div>
+                        </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+                      </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
                     <div className="flex items-center gap-4">
                       <div className="bg-white/10 p-2.5 rounded-xl"><RefreshCw className="h-4 w-4 text-gray-400" /></div>
                       <div>
                         <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Status</p>
                         <p className="text-sm font-bold text-blue-400">{selectedParcel.statut}</p>
-                      </div>
-                    </div>
-                  </div>
+                        </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
                 </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+                      </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+                    </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+                  </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
 
                 <div className="pt-4 space-y-3">
                    <button
@@ -193,17 +1207,252 @@ const AdminAmeex = () => {
                    >
                      <Printer className="h-4 w-4" /> Print Label
                    </button>
+                  </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
                 </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
               </motion.div>
             ) : (
               <div className="h-[400px] bg-gray-50 rounded-[48px] border border-dashed border-gray-200 flex flex-col items-center justify-center p-10 text-center space-y-4">
                 <Truck className="h-16 w-16 text-gray-200" />
                 <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] italic">Select a parcel to view details or select multiple to create a Delivery Note</p>
-              </div>
+                </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
             )}
           </AnimatePresence>
+          </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
         </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
       </div>
+
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><XIcon className="h-6 w-6 text-gray-400" /></button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
+                            <option value="1">Casablanca</option>
+                            <option value="4">Rabat</option>
+                            <option value="2">Marrakech</option>
+                            {/* Add more as needed */}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => pickupMutation.mutate(pickupData)}
+                  disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
