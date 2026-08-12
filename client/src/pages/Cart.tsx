@@ -89,22 +89,23 @@ const Cart = () => {
         note: formData.note
       };
 
-      const res = await api.post('/orders', orderData);
       const newOrder = res.data;
 
-      // Color Emoji Helper
-      const getColorEmoji = (hex: string) => {
+      // Color Helper
+      const getColorInfo = (hex: string) => {
         const h = hex.toUpperCase();
-        if (h === '#FFFFFF') return '⚪';
-        if (h === '#000000') return '⚫';
-        if (h === '#FF0000') return '🔴';
-        if (h === '#0000FF') return '🔵';
-        if (h === '#008000') return '🟢';
-        if (h === '#FFD700') return '🟡';
-        if (h === '#FFC0CB') return '🌸';
-        if (h === '#C2A381') return '🟤';
-        if (h === '#87CEEB') return '💎';
-        return '🎨';
+        const mapping: any = {
+          '#FFFFFF': { name: 'أبيض (White)', emoji: '⚪' },
+          '#000000': { name: 'أسود (Black)', emoji: '⚫' },
+          '#FF0000': { name: 'أحمر (Red)', emoji: '🔴' },
+          '#0000FF': { name: 'أزرق (Blue)', emoji: '🔵' },
+          '#008000': { name: 'أخضر (Green)', emoji: '🟢' },
+          '#FFD700': { name: 'ذهبي / أصفر (Gold)', emoji: '🟡' },
+          '#FFC0CB': { name: 'وردي (Pink)', emoji: '🌸' },
+          '#C2A381': { name: 'بيج (Beige)', emoji: '🟤' },
+          '#87CEEB': { name: 'سماوي (Sky Blue)', emoji: '💎' }
+        };
+        return mapping[h] || { name: hex, emoji: '🎨' };
       };
 
       // 2. Format WhatsApp Message
@@ -119,11 +120,12 @@ const Cart = () => {
       message += `\n*المنتجات:*\n`;
 
       cart.forEach((item, index) => {
-        const emoji = getColorEmoji(item.selectedColor || '');
+        const colorInfo = getColorInfo(item.selectedColor || '');
+        const colorDisplay = `${colorInfo.emoji} ${colorInfo.name}`;
 
         message += `📦 *${item.name}*\n`;
         message += `📏 *المقاس:* ${item.selectedSize}\n`;
-        if (item.selectedColor) message += `🎨 *اللون:* ${emoji} ${item.selectedColor}\n`;
+        if (item.selectedColor) message += `🎨 *اللون:* ${colorDisplay}\n`;
         message += `🔢 *الكمية:* ${item.quantity}\n`;
 
         if (item.customPhotos && item.customPhotos.length > 0) {
