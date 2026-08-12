@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/axios';
-import { Package, Search, Truck, Info, RefreshCw, Trash2, List, MapPin, CheckSquare, Square, FileText, Printer, X, AlertCircle } from 'lucide-react';
+import { Package, Search, Truck, Info, RefreshCw, Trash2, List, MapPin, CheckSquare, Square, FileText, Printer, X, AlertCircle, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminAmeex = () => {
   const queryClient = useQueryClient();
@@ -9,10 +10,14 @@ const AdminAmeex = () => {
   const [selectedParcel, setSelectedParcel] = useState<any>(null);
   const [selectedForNote, setSelectedForNote] = useState<string[]>([]);
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
-  const [pickupData, setPickupData] = useState({ city: '1', address: '', phone: '', note: '' });
+
+  // Pickup Form State
+  const [pickupData, setPickupData] = useState({ cityId: '', address: '', phone: '', note: '' });
+  const [citySearch, setCitySearch] = useState('');
+  const [isCityListOpen, setIsCityListOpen] = useState(false);
 
   const { data: deliveryCities } = useQuery({
-    queryKey: ['admin-delivery'], // Use same key as AdminDelivery for consistency
+    queryKey: ['admin-delivery'],
     queryFn: async () => {
         const res = await api.get('/delivery');
         return Array.isArray(res.data) ? res.data : [];
@@ -23,6 +28,17 @@ const AdminAmeex = () => {
     queryKey: ['ameex-parcels'],
     queryFn: async () => (await api.post('/ameex/list', { length: '50' })).data
   });
+
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return [];
+    return deliveryCities?.filter((c: any) =>
+        c.city.toLowerCase().includes(citySearch.toLowerCase())
+    ).slice(0, 5);
+  }, [citySearch, deliveryCities]);
+
+  const selectedCityName = useMemo(() => {
+    return deliveryCities?.find((c: any) => c.id === pickupData.cityId)?.city || '';
+  }, [pickupData.cityId, deliveryCities]);
 
   const infoMutation = useMutation({
     mutationFn: (code: string) => api.get(`/ameex/info?parcelCode=${code}`),
@@ -59,7 +75,15 @@ const AdminAmeex = () => {
   });
 
   const pickupMutation = useMutation({
-    mutationFn: (data: any) => api.post('/ameex/pickup/add', data),
+    mutationFn: () => {
+        const cityObj = deliveryCities?.find((c: any) => c.id === pickupData.cityId);
+        return api.post('/ameex/pickup/add', {
+            city: cityObj?.ameexId || '1',
+            address: pickupData.address,
+            phone: pickupData.phone,
+            note: pickupData.note
+        });
+    },
     onSuccess: (res) => {
         if (res.data.status === false) {
             alert('AMEEX Error: ' + res.data.message);
@@ -68,10 +92,7 @@ const AdminAmeex = () => {
             alert('Pickup Request Sent Successfully!');
         }
     },
-    onError: (err: any) => {
-        const msg = err.response?.data?.message || err.message;
-        alert(`Failed: ${msg}`);
-    }
+    onError: (err: any) => alert(`Failed: ${err.response?.data?.message || err.message}`)
   });
 
   const toggleSelect = (code: string) => {
@@ -230,51 +251,65 @@ const AdminAmeex = () => {
         </div>
       </div>
 
-      {isPickupModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-          <div className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8 text-start">
-              <div className="flex justify-between items-center text-start">
-                  <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
-                  <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="h-6 w-6 text-gray-400" /></button>
-              </div>
-              <div className="space-y-4 text-start">
-                  <div className="space-y-2 text-start">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
-                      <select
-                          className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none"
-                          value={pickupData.city}
-                          onChange={e => setPickupData({...pickupData, city: e.target.value})}
-                      >
-                          <option value="">Select City...</option>
-                          {deliveryCities?.map((c: any) => (
-                              <option key={c.id} value={c.ameexId || '1'}>{c.city} {!c.ameexId ? '(Using ID 1)' : ''}</option>
-                          ))}
-                      </select>
-                  </div>
-                  <div className="space-y-2 text-start">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
-                      <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
-                  </div>
-                  <div className="space-y-2 text-start">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
-                      <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
-                  </div>
-                  <div className="space-y-2 text-start">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
-                      <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
-                  </div>
-              </div>
-              <button
-                onClick={() => pickupMutation.mutate(pickupData)}
-                disabled={pickupMutation.isPending || !pickupData.address || !pickupData.phone}
-                className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
-              </button>
+      <AnimatePresence>
+        {isPickupModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPickupModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-lg rounded-[48px] shadow-2xl p-10 space-y-8 text-start">
+                <div className="flex justify-between items-center text-start">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Pickup Request</h2>
+                    <button onClick={() => setIsPickupModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="h-6 w-6 text-gray-400" /></button>
+                </div>
+                <div className="space-y-4 text-start">
+                    <div className="space-y-2 relative text-start">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
+                        <div className="relative">
+                            <input
+                                className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold"
+                                placeholder={selectedCityName || "Search City..."}
+                                value={citySearch}
+                                onChange={(e) => { setCitySearch(e.target.value); setIsCityListOpen(true); }}
+                                onFocus={() => setIsCityListOpen(true)}
+                            />
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                        </div>
+                        <AnimatePresence>
+                            {isCityListOpen && citySearch.length >= 1 && (
+                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute z-[120] left-0 right-0 mt-2 max-h-48 overflow-y-auto bg-white border border-gray-100 rounded-2xl shadow-2xl py-2">
+                                    {filteredCities?.map((c: any) => (
+                                        <button key={c.id} onClick={() => { setPickupData({...pickupData, cityId: c.id}); setCitySearch(c.city); setIsCityListOpen(false); }} className="w-full text-left px-6 py-3 hover:bg-blue-50 font-bold text-sm transition-colors flex justify-between items-center">
+                                            <span>{c.city}</span>
+                                            <span className="text-[9px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">ID: {c.ameexId || '1'}</span>
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                    <div className="space-y-2 text-start">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                        <textarea className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" rows={2} placeholder="Warehouse address..." value={pickupData.address} onChange={e => setPickupData({...pickupData, address: e.target.value})} />
+                    </div>
+                    <div className="space-y-2 text-start">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Phone</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="06XXXXXXXX" value={pickupData.phone} onChange={e => setPickupData({...pickupData, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2 text-start">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Note (Optional)</label>
+                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold" placeholder="Any instructions..." value={pickupData.note} onChange={e => setPickupData({...pickupData, note: e.target.value})} />
+                    </div>
+                </div>
+                <button
+                  onClick={() => pickupMutation.mutate()}
+                  disabled={pickupMutation.isPending || !pickupData.cityId || !pickupData.address || !pickupData.phone}
+                  className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {pickupMutation.isPending ? <RefreshCw className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Pickup Request'}
+                </button>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };
