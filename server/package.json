@@ -7,6 +7,8 @@
     "dev": "npx tsx watch src/index.ts",
     "build": "npx prisma generate && tsc",
     "start": "npx prisma db push && node dist/index.js",
+    "seed": "npx tsx prisma/seed.ts",
+    "seed-delivery": "npx tsx prisma/seed_delivery.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "prisma": {
