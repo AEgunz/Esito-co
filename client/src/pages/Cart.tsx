@@ -75,7 +75,8 @@ const Cart = () => {
           price: item.price,
           selectedSize: item.selectedSize,
           selectedColor: item.selectedColor,
-          customerPhoto: item.customPhotos ? JSON.stringify(item.customPhotos) : item.image
+          customerPhoto: item.customPhotos ? JSON.stringify(item.customPhotos) : item.image,
+          customText: item.customText
         })),
         totalAmount: grandTotal,
         deliveryFee: deliveryFee,
@@ -107,7 +108,17 @@ const Cart = () => {
         message += `📏 *المقاس:* ${item.selectedSize}\n`;
         if (item.selectedColor) message += `🎨 *اللون:* ${item.selectedColor}\n`;
         message += `🔢 *الكمية:* ${item.quantity}\n`;
-        message += `🖼️ *الصورة:* ${getImageUrl(item.image).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n\n`;
+
+        if (item.customPhotos && item.customPhotos.length > 0) {
+            item.customPhotos.forEach((p, i) => {
+                message += `🖼️ *الصورة ${i+1}:* ${getImageUrl(p).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
+            });
+        } else {
+            message += `🖼️ *الصورة:* ${getImageUrl(item.image).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
+        }
+
+        if (item.customText) message += `📝 *الكتابة:* ${item.customText}\n`;
+        message += `\n`;
       });
 
       message += `*المجموع الكلي:* ${grandTotal.toFixed(0)} DH\n`;

@@ -28,7 +28,7 @@ const Editor = () => {
   const [quantity, setQuantity] = useState(1);
   const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '', note: '' });
   const [customText, setCustomText] = useState('');
-  const [customPhoto, setCustomPhoto] = useState<string | null>(null);
+  const [customPhotos, setCustomPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
@@ -104,26 +104,41 @@ const Editor = () => {
   }, []);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const uploadData = new FormData();
-    uploadData.append('image', file);
+    const maxPhotos = product?.photoCount || 1;
+    const remainingSlots = maxPhotos - customPhotos.length;
 
+    if (remainingSlots <= 0) {
+        alert(`You can only upload up to ${maxPhotos} photos.`);
+        return;
+    }
+
+    const selectedFiles = Array.from(files).slice(0, remainingSlots);
     setIsUploading(true);
+
     try {
-      const res = await api.post('/upload', uploadData);
-      setCustomPhoto(res.data.url);
+      const uploadPromises = selectedFiles.map(async (file) => {
+        const uploadData = new FormData();
+        uploadData.append('image', file);
+        const res = await api.post('/upload', uploadData);
+        return res.data.url;
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      setCustomPhotos(prev => [...prev, ...urls]);
     } catch (error) {
-      alert('Error uploading photo');
+      alert('Error uploading one or more photos');
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleAddToCart = () => {
-    if (product.requiresCustomPhotos && !customPhoto) {
-        alert(t('editor.uploadRequired'));
+    const requiredPhotos = product.photoCount || (product.requiresCustomPhotos ? 1 : 0);
+    if (product.requiresCustomPhotos && customPhotos.length < requiredPhotos) {
+        alert(`${t('editor.uploadRequired')} (${customPhotos.length}/${requiredPhotos})`);
         return;
     }
 
@@ -132,11 +147,12 @@ const Editor = () => {
       productId: product.id,
       name: product.name,
       price: Number(product.price),
-      image: customPhoto || activeImage,
+      image: customPhotos[0] || activeImage,
       selectedSize,
       selectedColor,
       quantity,
-      customText: customText // Pass custom text to cart
+      customText: customText,
+      customPhotos: customPhotos // Pass all photos
     });
 
     alert(t('editor.addToCart') + ' ✅');
@@ -148,8 +164,9 @@ const Editor = () => {
       return;
     }
 
-    if (product.requiresCustomPhotos && !customPhoto) {
-        alert(t('editor.uploadRequired'));
+    const requiredPhotos = product.photoCount || (product.requiresCustomPhotos ? 1 : 0);
+    if (product.requiresCustomPhotos && customPhotos.length < requiredPhotos) {
+        alert(`${t('editor.uploadRequired')} (${customPhotos.length}/${requiredPhotos})`);
         return;
     }
 
@@ -162,7 +179,7 @@ const Editor = () => {
           price: item.price,
           selectedSize: item.selectedSize,
           selectedColor: item.selectedColor,
-          customerPhoto: item.image,
+          customerPhoto: item.customPhotos ? JSON.stringify(item.customPhotos) : item.image,
           customText: item.customText
         }))
       : [{
@@ -171,7 +188,7 @@ const Editor = () => {
           price: Number(product.price),
           selectedSize,
           selectedColor,
-          customerPhoto: customPhoto || activeImage,
+          customerPhoto: customPhotos.length > 0 ? JSON.stringify(customPhotos) : activeImage,
           customText: customText
         }];
 
@@ -217,7 +234,23 @@ const Editor = () => {
         message += `📏 *المقاس:* ${item.selectedSize}\n`;
         if (item.selectedColor) message += `🎨 *اللون:* ${colorDisplay}\n`;
         message += `🔢 *الكمية:* ${item.quantity}\n`;
-        message += `🖼️ *الصورة:* ${getImageUrl(item.customerPhoto).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n\n`;
+
+        // Handle multiple photos in WhatsApp message
+        try {
+            const photos = JSON.parse(item.customerPhoto);
+            if (Array.isArray(photos)) {
+                photos.forEach((p, i) => {
+                    message += `🖼️ *الصورة ${i+1}:* ${getImageUrl(p).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
+                });
+            } else {
+                message += `🖼️ *الصورة:* ${getImageUrl(item.customerPhoto).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
+            }
+        } catch (e) {
+            message += `🖼️ *الصورة:* ${getImageUrl(item.customerPhoto).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
+        }
+
+        if (item.customText) message += `📝 *الكتابة:* ${item.customText}\n`;
+        message += `\n`;
       });
 
       message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n`;
@@ -459,35 +492,49 @@ const Editor = () => {
             {product.requiresCustomPhotos && (
               <div className="space-y-6 pt-6 border-t border-gray-50">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                    <Upload className="h-3 w-3" /> {t('editor.uploadPhoto')}
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center justify-between">
+                    <span className="flex items-center gap-2"><Upload className="h-3 w-3" /> {t('editor.uploadPhoto')}</span>
+                    <span className="text-blue-600">({customPhotos.length} / {product.photoCount || 1})</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                      id="photo-upload"
-                    />
-                    <label
-                      htmlFor="photo-upload"
-                      className={`w-full flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-dashed transition-all cursor-pointer ${customPhoto ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}
-                    >
-                      {isUploading ? (
-                        <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-                      ) : customPhoto ? (
-                        <div className="text-center">
-                           <Check className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                           <p className="text-xs font-bold text-green-700">{t('editor.uploaded')}</p>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                           <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
-                           <p className="text-[10px] font-black text-gray-500 uppercase">{t('editor.chooseFile')}</p>
-                        </div>
-                      )}
-                    </label>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {customPhotos.map((url, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 group">
+                        <img src={getImageUrl(url)} className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setCustomPhotos(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {customPhotos.length < (product.photoCount || 1) && (
+                      <div className="relative aspect-square">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          id="photo-upload"
+                        />
+                        <label
+                          htmlFor="photo-upload"
+                          className={`w-full h-full flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all cursor-pointer ${isUploading ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}
+                        >
+                          {isUploading ? (
+                            <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
+                          ) : (
+                            <>
+                              <Upload className="h-5 w-5 text-gray-400 mb-1" />
+                              <span className="text-[8px] font-black text-gray-500 uppercase">{t('common.add')}</span>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
 

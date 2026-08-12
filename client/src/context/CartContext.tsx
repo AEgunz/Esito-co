@@ -10,6 +10,7 @@ export interface CartItem {
   selectedColor: string;
   quantity: number;
   customPhotos?: string[];
+  customText?: string;
 }
 
 interface CartContextType {
