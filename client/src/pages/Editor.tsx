@@ -210,6 +210,21 @@ const Editor = () => {
 
       const newOrder = res.data;
 
+      // Color Emoji Helper
+      const getColorEmoji = (hex: string) => {
+        const h = hex.toUpperCase();
+        if (h === '#FFFFFF') return '⚪';
+        if (h === '#000000') return '⚫';
+        if (h === '#FF0000') return '🔴';
+        if (h === '#0000FF') return '🔵';
+        if (h === '#008000') return '🟢';
+        if (h === '#FFD700') return '🟡';
+        if (h === '#FFC0CB') return '🌸';
+        if (h === '#C2A381') return '🟤';
+        if (h === '#87CEEB') return '💎';
+        return '🎨';
+      };
+
       // Format WhatsApp Message
       const whatsappNumber = "212693360625";
       let message = `*طلب جديد من Estilo-co*\n\n`;
@@ -227,8 +242,8 @@ const Editor = () => {
         // Find color name if available
         const colorObj = Array.isArray(product.colors) ? product.colors.find((c: any) => (c.hex || c) === item.selectedColor) : null;
         const colorName = colorObj?.name || "";
-        const colorValue = item.selectedColor;
-        const colorDisplay = colorName ? `${colorName} (${colorValue})` : colorValue;
+        const emoji = getColorEmoji(item.selectedColor || '');
+        const colorDisplay = colorName ? `${emoji} ${colorName}` : `${emoji} ${item.selectedColor}`;
 
         message += `📦 *${prodName}*\n`;
         message += `📏 *المقاس:* ${item.selectedSize}\n`;
@@ -253,7 +268,19 @@ const Editor = () => {
         message += `\n`;
       });
 
-      message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n`;
+      message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n\n`;
+
+      // Add first image link again at the very end to help WhatsApp generate a preview
+      const firstPhoto = orderItems[0]?.customerPhoto;
+      if (firstPhoto) {
+          try {
+              const p = JSON.parse(firstPhoto);
+              const url = Array.isArray(p) ? p[0] : firstPhoto;
+              message += `${getImageUrl(url).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}`;
+          } catch(e) {
+              message += `${getImageUrl(firstPhoto).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}`;
+          }
+      }
 
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
