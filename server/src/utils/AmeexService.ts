@@ -43,6 +43,7 @@ class AmeexService {
       });
       return response.data;
     } catch (error: any) {
+      console.error('Ameex Add Error:', error.response?.data || error.message);
       throw error;
     }
   }

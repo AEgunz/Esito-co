@@ -15,8 +15,9 @@ export const getDeliveryFees = async (req: Request, res: Response) => {
 export const getDeliveryFeeByCity = async (req: Request, res: Response) => {
   try {
     const city = req.params.city as string;
-    const fee = await prisma.deliveryFee.findFirst({
-      where: { city: { equals: city, mode: 'insensitive' } }
+    // Database cities are stored in lowercase
+    const fee = await prisma.deliveryFee.findUnique({
+      where: { city: city.toLowerCase() }
     });
     res.json(fee || { city, fee: 30 }); // Default 30 if not found
   } catch (error) {
@@ -230,12 +231,11 @@ export const seedDeliveryFees = async (req: Request, res: Response) => {
 
     console.log('Seeding delivery fees...');
     for (const item of deliveryData) {
-      // Use the city name as provided in the list
       await prisma.deliveryFee.upsert({
-        where: { city: item.city },
+        where: { city: item.city.toLowerCase() },
         update: { fee: Number(item.fee) },
         create: {
-          city: item.city,
+          city: item.city.toLowerCase(),
           fee: Number(item.fee)
         },
       });
