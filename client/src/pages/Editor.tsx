@@ -491,6 +491,13 @@ const Editor = () => {
             {/* Customization Controls (If Product Requires) */}
             {product.requiresCustomPhotos && (
               <div className="space-y-6 pt-6 border-t border-gray-50">
+                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 text-start flex gap-3">
+                   <AlertCircle className="h-5 w-5 text-blue-500 shrink-0" />
+                   <p className="text-[11px] font-bold text-blue-700 leading-relaxed italic">
+                     {t('editor.customizationNote')}
+                   </p>
+                </div>
+
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center justify-between">
                     <span className="flex items-center gap-2"><Upload className="h-3 w-3" /> {t('editor.uploadPhoto')}</span>
