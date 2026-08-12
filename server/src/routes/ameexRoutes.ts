@@ -2,7 +2,9 @@ import express from 'express';
 import {
   addParcel, editParcel, deleteParcel, getParcelInfo,
   getParcelTracking, getParcelStatus, massTracking,
-  massInfo, relaunchParcel, relaunchNew, getParcelsList
+  massInfo, relaunchParcel, relaunchNew, getParcelsList,
+  addDeliveryNote, addParcelsToNote, deleteDeliveryNote,
+  getPrintUrls, addPickupRequest
 } from '../controllers/ameexController';
 import { authenticate, authorizeAdmin } from '../middlewares/auth';
 
