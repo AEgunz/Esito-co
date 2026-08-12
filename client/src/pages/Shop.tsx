@@ -1,13 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import api, { SERVER_URL } from '../api/axios';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutGrid, Square, Grid2X2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const Shop = () => {
   const { t } = useTranslation();
+  const { categoryName } = useParams();
+  const navigate = useNavigate();
+
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<any>(null);
   const [selectedChildCategory, setSelectedChildCategory] = useState<any>(null);
@@ -31,6 +34,22 @@ const Shop = () => {
     queryKey: ['products'],
     queryFn: async () => (await api.get('/products')).data
   });
+
+  // Handle URL changes to update state
+  useEffect(() => {
+    if (categories && categoryName) {
+      const cat = categories.find((c: any) => c.name.toLowerCase() === categoryName.toLowerCase());
+      if (cat) setSelectedCategory(cat);
+    } else if (!categoryName) {
+      setSelectedCategory(null);
+    }
+  }, [categoryName, categories]);
+
+  const handleCategoryClick = (cat: any) => {
+    navigate(`/shop/${cat.name.toLowerCase()}`);
+    setSelectedSubCategory(null);
+    setSelectedChildCategory(null);
+  };
 
   const subCategories = selectedCategory?.subCategories || [];
   const availableChildCategories = selectedSubCategory?.childCategories || [];
@@ -74,7 +93,7 @@ const Shop = () => {
                 <motion.button
                   key={cat.id}
                   whileHover={{ y: -8 }}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => handleCategoryClick(cat)}
                   className="group relative aspect-[4/5] bg-white rounded-[48px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 text-left"
                 >
                   <img
@@ -106,7 +125,7 @@ const Shop = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4 text-start">
                     <button
-                        onClick={() => setSelectedCategory(null)}
+                        onClick={() => navigate('/shop')}
                         className="flex items-center gap-2 text-gray-400 hover:text-black transition font-black text-[10px] uppercase tracking-widest group bg-gray-50 px-4 py-2 rounded-full w-fit"
                     >
                         <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform rtl:rotate-180" /> {t('shop.back')}
@@ -234,7 +253,7 @@ const Shop = () => {
               {filteredProducts.length === 0 && (
                 <div className="py-40 text-center space-y-4">
                     <p className="text-gray-200 font-black text-4xl uppercase tracking-tighter italic">Coming Soon</p>
-                    <button onClick={() => setSelectedCategory(null)} className="text-blue-600 font-black uppercase text-xs tracking-widest underline">Try another category</button>
+                    <button onClick={() => navigate('/shop')} className="text-blue-600 font-black uppercase text-xs tracking-widest underline">Try another category</button>
                 </div>
               )}
             </div>
