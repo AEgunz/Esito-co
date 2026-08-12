@@ -12,7 +12,7 @@ const AdminAmeex = () => {
   const [pickupData, setPickupData] = useState({ city: '1', address: '', phone: '', note: '' });
 
   const { data: deliveryCities } = useQuery({
-    queryKey: ['delivery-cities'],
+    queryKey: ['admin-delivery'], // Use same key as AdminDelivery for consistency
     queryFn: async () => {
         const res = await api.get('/delivery');
         return Array.isArray(res.data) ? res.data : [];
@@ -247,8 +247,8 @@ const AdminAmeex = () => {
                           onChange={e => setPickupData({...pickupData, city: e.target.value})}
                       >
                           <option value="">Select City...</option>
-                          {deliveryCities?.filter((c: any) => c.ameexId).map((c: any) => (
-                              <option key={c.id} value={c.ameexId}>{c.city}</option>
+                          {deliveryCities?.map((c: any) => (
+                              <option key={c.id} value={c.ameexId || '1'}>{c.city} {!c.ameexId ? '(Using ID 1)' : ''}</option>
                           ))}
                       </select>
                   </div>
