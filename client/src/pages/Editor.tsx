@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, MapPin, User, Truck, RefreshCw,
   ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, AlertCircle,
-  Ruler, X, Star, MessageSquare
+  Ruler, X, Star, MessageSquare, Upload, Type
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
@@ -27,6 +27,9 @@ const Editor = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [formData, setFormData] = useState({ name: '', phone: '', city: '', address: '', note: '' });
+  const [customText, setCustomText] = useState('');
+  const [customPhoto, setCustomPhoto] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '', userName: '' });
@@ -100,16 +103,40 @@ const Editor = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('image', file);
+
+    setIsUploading(true);
+    try {
+      const res = await api.post('/upload', uploadData);
+      setCustomPhoto(res.data.url);
+    } catch (error) {
+      alert('Error uploading photo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleAddToCart = () => {
+    if (product.requiresCustomPhotos && !customPhoto) {
+        alert(t('editor.uploadRequired'));
+        return;
+    }
+
     addToCart({
       cartId: Date.now().toString(),
       productId: product.id,
       name: product.name,
       price: Number(product.price),
-      image: activeImage,
+      image: customPhoto || activeImage,
       selectedSize,
       selectedColor,
-      quantity
+      quantity,
+      customText: customText // Pass custom text to cart
     });
 
     alert(t('editor.addToCart') + ' ✅');
@@ -121,6 +148,11 @@ const Editor = () => {
       return;
     }
 
+    if (product.requiresCustomPhotos && !customPhoto) {
+        alert(t('editor.uploadRequired'));
+        return;
+    }
+
     const shippingFee = formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 30;
 
     const orderItems = cartCount > 0
@@ -130,7 +162,8 @@ const Editor = () => {
           price: item.price,
           selectedSize: item.selectedSize,
           selectedColor: item.selectedColor,
-          customerPhoto: item.image
+          customerPhoto: item.image,
+          customText: item.customText
         }))
       : [{
           productId: product.id,
@@ -138,7 +171,8 @@ const Editor = () => {
           price: Number(product.price),
           selectedSize,
           selectedColor,
-          customerPhoto: activeImage
+          customerPhoto: customPhoto || activeImage,
+          customText: customText
         }];
 
     const finalTotal = (cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + shippingFee;
@@ -409,6 +443,57 @@ const Editor = () => {
                 </div>
               )}
             </div>
+
+            {/* Customization Controls (If Product Requires) */}
+            {product.requiresCustomPhotos && (
+              <div className="space-y-6 pt-6 border-t border-gray-50">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <Upload className="h-3 w-3" /> {t('editor.uploadPhoto')}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    <label
+                      htmlFor="photo-upload"
+                      className={`w-full flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-dashed transition-all cursor-pointer ${customPhoto ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}
+                    >
+                      {isUploading ? (
+                        <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
+                      ) : customPhoto ? (
+                        <div className="text-center">
+                           <Check className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                           <p className="text-xs font-bold text-green-700">{t('editor.uploaded')}</p>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                           <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                           <p className="text-[10px] font-black text-gray-500 uppercase">{t('editor.chooseFile')}</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <Type className="h-3 w-3" /> {t('editor.customText')}
+                  </label>
+                  <textarea
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all text-sm"
+                    rows={2}
+                    placeholder={t('editor.customTextPlaceholder')}
+                    value={customText}
+                    onChange={e => setCustomText(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3 pt-6 border-t border-gray-50 text-start">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t('editor.quantity')} & {t('nav.cart')}</label>
