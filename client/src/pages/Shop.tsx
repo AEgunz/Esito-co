@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import api, { SERVER_URL } from '../api/axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LayoutGrid, Square, Grid2X2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,6 @@ const Shop = () => {
   const { categoryName } = useParams();
   const navigate = useNavigate();
 
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<any>(null);
   const [selectedChildCategory, setSelectedChildCategory] = useState<any>(null);
   const [mobileCols, setMobileCols] = useState(2);
@@ -35,15 +34,10 @@ const Shop = () => {
     queryFn: async () => (await api.get('/products')).data
   });
 
-  // Handle URL changes to update state
-  useEffect(() => {
-    if (categories && categoryName) {
-      const cat = categories.find((c: any) => c.name.toLowerCase() === categoryName.toLowerCase());
-      if (cat) setSelectedCategory(cat);
-    } else if (!categoryName) {
-      setSelectedCategory(null);
-    }
-  }, [categoryName, categories]);
+  // Derive selected category from URL
+  const selectedCategory = categories?.find(
+    (c: any) => c.name.toLowerCase() === categoryName?.toLowerCase()
+  );
 
   const handleCategoryClick = (cat: any) => {
     navigate(`/shop/${cat.name.toLowerCase()}`);
@@ -74,8 +68,8 @@ const Shop = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-20">
       <AnimatePresence mode="wait">
-        {!selectedCategory ? (
-          /* Step 1: Category Selection (The Big Cards) */
+        {!categoryName || !selectedCategory ? (
+          /* Step 1: Category Selection Grid */
           <motion.div
             key="categories-grid"
             initial={{ opacity: 0, y: 20 }}
@@ -113,15 +107,15 @@ const Shop = () => {
             </div>
           </motion.div>
         ) : (
-          /* Step 2: Tab-based Product View */
+          /* Step 2: Product View for Selected Category */
           <motion.div
-            key="products-tabs"
+            key="products-view"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
             className="space-y-8"
           >
-            {/* Navigation & Header */}
+            {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4 text-start">
                     <button
@@ -154,7 +148,7 @@ const Shop = () => {
                 </div>
             </div>
 
-            {/* Sub-Category Tabs */}
+            {/* Filtering Tabs */}
             <div className="space-y-4 pt-6 border-t border-gray-100 text-start">
                 {subCategories.length > 0 && (
                     <div className="flex flex-wrap gap-2">
@@ -176,7 +170,6 @@ const Shop = () => {
                     </div>
                 )}
 
-                {/* Level 3 Tabs (Anime, Oversize, etc) */}
                 {availableChildCategories.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: -5 }}
