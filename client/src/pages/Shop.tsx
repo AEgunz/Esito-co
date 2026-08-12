@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import api, { SERVER_URL } from '../api/axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { LayoutGrid, Square, Grid2X2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -34,36 +34,41 @@ const Shop = () => {
     queryFn: async () => (await api.get('/products')).data
   });
 
-  // Derive selected category from URL with robust matching
-  const selectedCategory = categories?.find((c: any) => {
-    const dbName = decodeURIComponent(c.name).toLowerCase().trim().replace(/\s+/g, '-');
-    const urlName = decodeURIComponent(categoryName || "").toLowerCase().trim().replace(/\s+/g, '-');
-    return dbName === urlName;
-  });
+  // Extremely robust category matching
+  const selectedCategory = useMemo(() => {
+    if (!categories || !categoryName) return null;
 
-  // Reset filters when changing category
-  useEffect(() => {
-    setSelectedSubCategory(null);
-    setSelectedChildCategory(null);
-  }, [categoryName]);
+    const normalize = (str: string) =>
+      decodeURIComponent(str)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '') // Remove everything except letters and numbers
+        .trim();
+
+    const target = normalize(categoryName);
+    return categories.find((c: any) => normalize(c.name) === target);
+  }, [categories, categoryName]);
 
   const handleCategoryClick = (cat: any) => {
-    const slug = cat.name.toLowerCase().trim().replace(/\s+/g, '-');
+    // Navigate with a clean slug
+    const slug = cat.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
     navigate(`/shop/${slug}`);
+    setSelectedSubCategory(null);
+    setSelectedChildCategory(null);
   };
 
   const subCategories = selectedCategory?.subCategories || [];
   const availableChildCategories = selectedSubCategory?.childCategories || [];
 
-  const filteredProducts = selectedCategory
-    ? allProducts?.filter((p: any) => {
-        const belongsToMain = p.subCategory?.categoryId === selectedCategory.id;
-        if (!belongsToMain) return false;
-        if (selectedSubCategory && p.subCategoryId !== selectedSubCategory.id) return false;
-        if (selectedChildCategory && p.childCategoryId !== selectedChildCategory.id) return false;
-        return true;
-      })
-    : [];
+  const filteredProducts = useMemo(() => {
+    if (!selectedCategory || !allProducts) return [];
+    return allProducts.filter((p: any) => {
+      const belongsToMain = p.subCategory?.categoryId === selectedCategory.id;
+      if (!belongsToMain) return false;
+      if (selectedSubCategory && p.subCategoryId !== selectedSubCategory.id) return false;
+      if (selectedChildCategory && p.childCategoryId !== selectedChildCategory.id) return false;
+      return true;
+    });
+  }, [selectedCategory, allProducts, selectedSubCategory, selectedChildCategory]);
 
   if (catsLoading || productsLoading) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
@@ -75,10 +80,10 @@ const Shop = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-20">
       <AnimatePresence mode="wait">
-        {!categoryName || !selectedCategory ? (
-          /* Step 1: Category Selection Grid */
+        {!selectedCategory ? (
+          /* Step 1: Category Selection Grid (Main View) */
           <motion.div
-            key="categories-grid"
+            key="main-collections-grid"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -114,15 +119,15 @@ const Shop = () => {
             </div>
           </motion.div>
         ) : (
-          /* Step 2: Product View for Selected Category */
+          /* Step 2: Product View for Selected Category (Inside Navigation) */
           <motion.div
-            key={`products-${selectedCategory.id}`}
-            initial={{ opacity: 0, x: 30 }}
+            key={`category-view-${selectedCategory.id}`}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
+            exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            {/* Header Area */}
+            {/* Header & Breadcrumb */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4 text-start">
                     <button
