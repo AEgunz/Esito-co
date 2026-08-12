@@ -4,29 +4,26 @@ import FormData from 'form-data';
 class AmeexService {
   private apiId: string;
   private apiKey: string;
-  private baseUrl: string;
+  private baseUrl: string = 'https://api.ameex.app/customer/Delivery/Parcels';
 
   constructor() {
-    // These should be in your .env file
     this.apiId = process.env.AMEEX_API_ID || '27124';
     this.apiKey = process.env.AMEEX_API_KEY || 'eC9Dd5-67a379-8Cc8e1-6259dC-34dC45-bF4881';
-    this.baseUrl = 'https://api.ameex.app/customer/Delivery/Parcels/Action/Type/Add';
+  }
+
+  private getHeaders(formHeaders?: any) {
+    return {
+      ...formHeaders,
+      'C-Api-Id': this.apiId,
+      'C-Api-Key': this.apiKey
+    };
   }
 
   async createParcel(order: any) {
-    if (!this.apiKey || !this.apiId) {
-        console.error('AMEEX Configuration Error: API ID or Key missing');
-        return null;
-    }
-
     try {
-      console.log(`--- STARTING AMEEX SYNC FOR ORDER #${order.id.slice(0,8)} ---`);
-
       const form = new FormData();
-
-      // Updated to your account Business ID
       form.append('type', 'SIMPLE');
-      form.append('business', this.apiId);
+      form.append('business', '2'); // As per curl example
       form.append('order_num', order.id.slice(0, 8));
       form.append('replace', 'true');
       form.append('exchange_code', '');
@@ -35,39 +32,160 @@ class AmeexService {
       form.append('fragile', '0');
       form.append('receiver', order.firstName);
       form.append('phone', order.phone.replace(/\s/g, ''));
-      form.append('city', String(order.city)); // Must be the ID (e.g. "1")
+      form.append('city', String(order.city));
       form.append('address', order.address);
-      form.append('comment', `Custom Text: ${order.items.map((i: any) => i.customText).filter(Boolean).join(', ') || 'None'}`);
-      form.append('product', order.items.map((i: any) => i.product?.name).join(', ') || 'Custom MDF');
+      form.append('comment', order.note || '');
+      form.append('product', order.items.map((i: any) => i.product?.name).join(', '));
       form.append('cod', Math.round(Number(order.totalAmount)).toString());
 
-      // Headers from the provided CURL
-      const headers = {
-        ...form.getHeaders(),
-        'C-Api-Id': this.apiId,
-        'C-Api-Key': this.apiKey
+      const response = await axios.post(`${this.baseUrl}/Action/Type/Add`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Ameex Add Error:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  async editParcel(parcelCode: string, data: any) {
+    try {
+      const form = new FormData();
+      Object.keys(data).forEach(key => form.append(key, String(data[key])));
+
+      const response = await axios.post(`${this.baseUrl}/Action/Type/Edit?ParcelCode=${parcelCode}`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async deleteParcel(parcelCode: string) {
+    try {
+      const response = await axios.delete(`${this.baseUrl}/Action/Type/Delete?ParcelCode=${parcelCode}`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async getParcelInfo(parcelCode: string) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/Info?ParcelCode=${parcelCode}`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async getParcelTracking(parcelCode: string) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/Tracking?ParcelCode=${parcelCode}`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async getParcelStatus() {
+    try {
+      const response = await axios.get(`${this.baseUrl}/Statuts`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async massTracking(codes: string) {
+    try {
+      const form = new FormData();
+      form.append('codes', codes);
+      const response = await axios.post(`${this.baseUrl}/MassTracking`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async massInfo(codes: string) {
+    try {
+      const form = new FormData();
+      form.append('codes', codes);
+      const response = await axios.post(`${this.baseUrl}/MassInfo`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async relaunchParcel(parcelCode: string) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/Action/Type/Relaunch?ParcelCode=${parcelCode}`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async relaunchNew(parcelCode: string, data: any) {
+    try {
+      const form = new FormData();
+      Object.keys(data).forEach(key => form.append(key, String(data[key])));
+      const response = await axios.post(`${this.baseUrl}/Action/Type/RelaunchNew?ParcelCode=${parcelCode}`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async getParcelsList(params: any = {}) {
+    try {
+      const form = new FormData();
+      const defaultParams = {
+        start: '0',
+        length: '10',
+        'search[value]': '',
+        'search[regex]': 'false',
+        business: '',
+        team: '',
+        city: '',
+        situation: '',
+        statut: '',
+        statut_s: '',
+        type: '',
+        date_type: '',
+        'date[from]': '01/01/2020',
+        'date[to]': new Date().toLocaleDateString('en-US'),
+        all_data: '1'
       };
 
-      const response = await axios.post(this.baseUrl, form, { headers });
+      const finalParams = { ...defaultParams, ...params };
+      Object.keys(finalParams).forEach(key => form.append(key, String(finalParams[key])));
 
-      if (response.data && (response.data.status === true || response.data.success)) {
-        console.log('✅ AMEEX SUCCESS:', response.data.message || 'Parcel Created');
-        // Return tracking code if available, otherwise return a success flag
-        return response.data.tracking_code || response.data.id || "SUCCESS";
-      } else {
-        console.warn('⚠️ AMEEX API returned unexpected format or error:', response.data);
-        return response.data.tracking_code || null;
-      }
-
+      const response = await axios.post(`${this.baseUrl}/Json`, form, {
+        headers: this.getHeaders(form.getHeaders())
+      });
+      return response.data;
     } catch (error: any) {
-      console.error('❌ AMEEX API ERROR:');
-      if (error.response) {
-        console.error('Status:', error.response.status);
-        console.error('Data:', JSON.stringify(error.response.data, null, 2));
-      } else {
-        console.error('Message:', error.message);
-      }
-      return null;
+      throw error;
     }
   }
 

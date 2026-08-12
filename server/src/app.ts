@@ -15,6 +15,7 @@ import orderRoutes from './routes/orderRoutes';
 import deliveryRoutes from './routes/deliveryRoutes';
 import templateRoutes from './routes/templateRoutes';
 import reviewRoutes from './routes/reviewRoutes';
+import ameexRoutes from './routes/ameexRoutes';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/ameex', ameexRoutes);
 
 app.get('/', (req, res) => {
   res.send('Estilo-co API is running v2');

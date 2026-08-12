@@ -1,17 +1,49 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api, { SERVER_URL } from '../../api/axios';
-import { ArrowLeft, Download, User, MapPin, Phone, Mail, Image as ImageIcon, Calendar, ShoppingBag, Sparkles } from 'lucide-react';
+import { ArrowLeft, Download, User, MapPin, Phone, Mail, Image as ImageIcon, Calendar, ShoppingBag, Sparkles, Truck, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 const AdminOrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['admin-order', id],
     queryFn: async () => (await api.get(`/orders/all`)).data.find((o: any) => o.id === id)
   });
+
+  const syncToAmeex = async () => {
+      setIsSyncing(true);
+      try {
+          // Find city mapping
+          const citiesRes = await api.get('/delivery');
+          const cityMap = Array.isArray(citiesRes.data) ? citiesRes.data : [];
+          const cityData = cityMap.find((c: any) => c.city.toLowerCase() === order.city.toLowerCase());
+
+          if (!cityData || !cityData.ameexId) {
+              alert(`Error: City "${order.city}" has no AMEEX ID mapping. Go to Delivery Fees to fix it.`);
+              return;
+          }
+
+          const res = await api.post('/ameex/add', {
+              ...order,
+              city: cityData.ameexId
+          });
+
+          if (res.data.status) {
+              alert(`Success! AMEEX Tracking: ${res.data.tracking_code}`);
+          } else {
+              alert(`AMEEX Error: ${res.data.message || 'Check logs'}`);
+          }
+      } catch (err: any) {
+          alert(`Sync Failed: ${err.response?.data?.message || err.message}`);
+      } finally {
+          setIsSyncing(false);
+      }
+  };
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
@@ -61,9 +93,18 @@ const AdminOrderDetail = () => {
                 </div>
             </div>
         </div>
-        <div className="bg-blue-600 text-white px-8 py-4 rounded-[24px] shadow-xl shadow-blue-100 flex flex-col items-center">
-            <span className="text-xs font-bold uppercase tracking-widest opacity-70">Total Amount</span>
-            <span className="text-3xl font-black">{Number(order.totalAmount).toFixed(0)} DH</span>
+        <div className="flex gap-4">
+            <button
+                onClick={syncToAmeex}
+                disabled={isSyncing}
+                className="bg-blue-600 text-white px-8 py-4 rounded-[24px] shadow-xl shadow-blue-100 flex items-center gap-3 font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition"
+            >
+                {isSyncing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <><Truck className="h-5 w-5" /> Send to AMEEX</>}
+            </button>
+            <div className="bg-blue-600 text-white px-8 py-4 rounded-[24px] shadow-xl shadow-blue-100 flex flex-col items-center">
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">Total Amount</span>
+                <span className="text-3xl font-black">{Number(order.totalAmount).toFixed(0)} DH</span>
+            </div>
         </div>
       </div>
 

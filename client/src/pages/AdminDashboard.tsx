@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin } from 'lucide-react';
 import AdminProducts from './admin/AdminProducts';
 import AdminOrders from './admin/AdminOrders';
 import AdminOrderDetail from './admin/AdminOrderDetail';
@@ -8,8 +8,8 @@ import AdminDelivery from './admin/AdminDelivery';
 import AdminStats from './admin/AdminStats';
 import AdminCustomers from './admin/AdminCustomers';
 import AdminCategories from './admin/AdminCategories';
-// V4 Force Update for Reviews
 import AdminReviews from './admin/AdminReviews';
+import AdminAmeex from './admin/AdminAmeex';
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -50,10 +50,11 @@ const AdminDashboard = () => {
   const menuItems = [
     { name: 'Overview', icon: PieChart, path: '/admin' },
     { name: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
+    { name: 'AMEEX Shipping', icon: Truck, path: '/admin/ameex' },
     { name: 'Products', icon: ShoppingBag, path: '/admin/products' },
     { name: 'Customers', icon: Users, path: '/admin/customers' },
     { name: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
-    { name: 'Delivery', icon: Truck, path: '/admin/delivery' },
+    { name: 'Delivery Fees', icon: MapPin, path: '/admin/delivery' },
     { name: 'Categories', icon: List, path: '/admin/categories' },
   ];
 
@@ -102,6 +103,7 @@ const AdminDashboard = () => {
           <Route path="/products" element={<AdminProducts />} />
           <Route path="/customers" element={<AdminCustomers />} />
           <Route path="/reviews" element={<AdminReviews />} />
+          <Route path="/ameex" element={<AdminAmeex />} />
           <Route path="/delivery" element={<AdminDelivery />} />
           <Route path="/categories" element={<AdminCategories />} />
           <Route path="/orders" element={<AdminOrders />} />
