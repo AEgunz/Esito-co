@@ -57,11 +57,19 @@ const AdminAmeex = () => {
 
   const pickupMutation = useMutation({
     mutationFn: (data: any) => api.post('/ameex/pickup/add', data),
-    onSuccess: () => {
-        setIsPickupModalOpen(false);
-        alert('Pickup Request Sent Successfully!');
+    onSuccess: (res) => {
+        if (res.data.status === false) {
+            alert('AMEEX Error: ' + res.data.message);
+        } else {
+            setIsPickupModalOpen(false);
+            alert('Pickup Request Sent Successfully!');
+        }
     },
-    onError: (err: any) => alert('Failed: ' + (err.response?.data?.message || err.message))
+    onError: (err: any) => {
+        const msg = err.response?.data?.message || err.message;
+        const details = err.response?.data?.details?.message || "";
+        alert(`Failed: ${msg} ${details}`);
+    }
   });
 
   const toggleSelect = (code: string) => {
@@ -247,10 +255,15 @@ const AdminAmeex = () => {
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup City</label>
-                        <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none" value={pickupData.city} onChange={e => setPickupData({...pickupData, city: e.target.value})}>
-                            <option value="1">Casablanca</option>
-                            <option value="4">Rabat</option>
-                            <option value="2">Marrakech</option>
+                        <select
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-600 font-bold appearance-none"
+                            value={pickupData.city}
+                            onChange={e => setPickupData({...pickupData, city: e.target.value})}
+                        >
+                            <option value="">Select City...</option>
+                            {deliveryCities?.filter((c: any) => c.ameexId).map((c: any) => (
+                                <option key={c.id} value={c.ameexId}>{c.city}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="space-y-2">

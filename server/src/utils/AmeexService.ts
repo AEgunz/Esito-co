@@ -23,7 +23,7 @@ class AmeexService {
     try {
       const form = new FormData();
       form.append('type', 'SIMPLE');
-      form.append('business', '2');
+      form.append('business', this.apiId);
       form.append('order_num', order.id.slice(0, 8));
       form.append('replace', 'true');
       form.append('exchange_code', '');
@@ -43,7 +43,6 @@ class AmeexService {
       });
       return response.data;
     } catch (error: any) {
-      console.error('Ameex Add Error:', error.response?.data || error.message);
       throw error;
     }
   }
@@ -163,7 +162,7 @@ class AmeexService {
         length: '10',
         'search[value]': '',
         'search[regex]': 'false',
-        business: '',
+        business: this.apiId,
         team: '',
         city: '',
         situation: '',
@@ -189,7 +188,7 @@ class AmeexService {
   async addDeliveryNote() {
     try {
       const form = new FormData();
-      form.append('business', '2');
+      form.append('business', this.apiId);
       const response = await axios.post('https://api.ameex.app/customer/Delivery/DeliveryNotes/Action/Type/Add', form, {
         headers: this.getHeaders(form.getHeaders())
       });
@@ -234,7 +233,7 @@ class AmeexService {
   async addPickupRequest(data: any) {
     try {
       const form = new FormData();
-      form.append('mdl_business', '2');
+      form.append('mdl_business', this.apiId);
       form.append('mdl_type', 'PARCEL_M');
       form.append('mdl_city', String(data.city));
       form.append('p_address', data.address);
