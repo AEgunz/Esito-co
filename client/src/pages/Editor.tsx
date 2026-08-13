@@ -214,6 +214,8 @@ const Editor = () => {
         email: 'customer@estilo-co.com'
       });
 
+      const newOrder = res.data;
+
       // Color Helper
       const getColorInfo = (hex: string) => {
         const h = hex.toUpperCase();

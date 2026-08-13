@@ -104,6 +104,7 @@ const Cart = () => {
         note: formData.note
       };
 
+      const res = await api.post('/orders', orderData);
       const newOrder = res.data;
 
       // Color Helper
