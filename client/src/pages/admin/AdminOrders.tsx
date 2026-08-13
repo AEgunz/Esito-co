@@ -15,9 +15,12 @@ const AdminOrders = () => {
   const [filter, setFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-orders'],
-    queryFn: async () => (await api.get('/orders/all')).data
+    queryFn: async () => {
+        const res = await api.get('/orders/all');
+        return Array.isArray(res.data) ? res.data : [];
+    }
   });
 
   const deleteMutation = useMutation({
@@ -89,13 +92,28 @@ const AdminOrders = () => {
           <h1 className="text-4xl font-black tracking-tight text-gray-900 uppercase italic">Orders Management</h1>
           <p className="text-gray-400 font-medium">Manage and track your customer orders</p>
         </div>
-        <button
-          onClick={exportToCSV}
-          className="flex items-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition shadow-xl uppercase text-xs tracking-widest w-fit"
-        >
-          <Download className="h-4 w-4" /> Export for AMEEX
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => refetch()}
+            className="p-4 bg-white border border-gray-100 text-gray-400 rounded-2xl hover:text-black transition shadow-sm"
+          >
+            <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition shadow-xl uppercase text-xs tracking-widest w-fit"
+          >
+            <Download className="h-4 w-4" /> Export for AMEEX
+          </button>
+        </div>
       </div>
+
+      {isError && (
+          <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center gap-4">
+              <AlertCircle className="h-6 w-6" />
+              <p className="font-bold">Error loading orders. Please check your connection or login again.</p>
+          </div>
+      )}
 
       <div className="flex flex-wrap gap-3 bg-white p-2 rounded-[28px] border border-gray-100 shadow-sm w-fit">
         {['ALL', 'PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((s) => (

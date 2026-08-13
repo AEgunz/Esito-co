@@ -62,7 +62,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       });
 
       if (!deliverySettings || !deliverySettings.ameexId) {
-        console.error(`⚠️ WARNING: City "${order.city}" has no AMEEX ID mapping. Using default "1". Please configure it in Admin > Delivery.`);
+        console.error(`⚠️ WARNING: City "${order.city}" has no AMEEX ID mapping. Using default "1".`);
       }
 
       const orderForAmeex = {
@@ -70,15 +70,17 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         city: deliverySettings?.ameexId || '1'
       };
 
-      console.log(`📡 Syncing with AMEEX: Sending City ID "${orderForAmeex.city}" for city "${order.city}"`);
+      const trackingData = await AmeexService.createParcel(orderForAmeex);
+      const trackingNumber = trackingData?.code || trackingData?.ref || (typeof trackingData === 'string' ? trackingData : null);
 
-      const trackingNumber = await AmeexService.createParcel(orderForAmeex);
-      if (trackingNumber) {
+      if (trackingNumber && typeof trackingNumber === 'string') {
         console.log(`✅ AMEEX Parcel Created: ${trackingNumber}`);
         await prisma.order.update({
           where: { id: order.id },
-          data: { trackingNumber: String(trackingNumber) }
+          data: { trackingNumber: trackingNumber }
         });
+      } else {
+        console.log('📡 AMEEX Response received but no tracking number found:', trackingData);
       }
     } catch (ameexError) {
       console.error('AMEEX Integration Failed:', ameexError);
