@@ -1,12 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api, { SERVER_URL } from '../../api/axios';
+import api from '../../api/axios';
 import {
   Package, Search, Clock, CheckCircle, Truck,
   ChevronRight, AlertCircle, ShoppingBag, Calendar,
-  Download, Trash2, Eye
+  Download, Trash2, Eye, RefreshCw
 } from 'lucide-react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 const AdminOrders = () => {
@@ -38,18 +37,18 @@ const AdminOrders = () => {
   });
 
   const exportToCSV = () => {
-    if (!orders) return;
+    if (!orders || !Array.isArray(orders)) return;
     const headers = ["Order ID", "Date", "Customer", "Phone", "Address", "Total (DH)", "City", "Note", "Items"];
     const rows = orders.map((o: any) => [
-      o.id.substring(0, 8),
-      new Date(o.createdAt).toLocaleDateString(),
-      o.firstName,
-      o.phone,
-      o.address,
-      Number(o.totalAmount).toFixed(0),
-      o.city,
-      o.items.map((i: any) => i.customText).filter(Boolean).join(' | ') || 'None',
-      o.items.map((i: any) => i.product?.name).join(', ')
+      String(o.id || '').substring(0, 8),
+      o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A',
+      o.firstName || 'Unknown',
+      o.phone || 'N/A',
+      `"${(o.address || '').replace(/"/g, '""')}"`,
+      Number(o.totalAmount || 0).toFixed(0),
+      o.city || 'N/A',
+      `"${(o.items?.map((i: any) => i.customText).filter(Boolean).join(' | ') || 'None').replace(/"/g, '""')}"`,
+      `"${(o.items?.map((i: any) => i.product?.name).join(', ') || 'Empty').replace(/"/g, '""')}"`
     ]);
 
     let csvContent = "data:text/csv;charset=utf-8,"
@@ -62,15 +61,16 @@ const AdminOrders = () => {
     link.setAttribute("download", `AMEEX_IMPORT_${new Date().toLocaleDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
-  const filteredOrders = orders?.filter((o: any) => {
+  const filteredOrders = Array.isArray(orders) ? orders.filter((o: any) => {
     const matchesFilter = filter === 'ALL' || o.status === filter;
-    const matchesSearch = o.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          o.phone?.includes(searchTerm) ||
-                          o.id.includes(searchTerm);
+    const matchesSearch = (o.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                          (o.phone || '').includes(searchTerm) ||
+                          (o.id || '').includes(searchTerm);
     return matchesFilter && matchesSearch;
-  });
+  }) : [];
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -83,12 +83,17 @@ const AdminOrders = () => {
     }
   };
 
-  if (isLoading) return <div className="p-20 text-center animate-pulse">Loading Orders...</div>;
+  if (isLoading) return (
+    <div className="p-20 text-center flex flex-col items-center justify-center gap-4">
+        <RefreshCw className="h-10 w-10 animate-spin text-blue-600" />
+        <p className="font-black text-gray-400 uppercase tracking-widest text-xs">Loading Orders...</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
+    <div className="space-y-8 text-start">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 text-start">
+        <div className="text-start">
           <h1 className="text-4xl font-black tracking-tight text-gray-900 uppercase italic">Orders Management</h1>
           <p className="text-gray-400 font-medium">Manage and track your customer orders</p>
         </div>
@@ -111,11 +116,11 @@ const AdminOrders = () => {
       {isError && (
           <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center gap-4">
               <AlertCircle className="h-6 w-6" />
-              <p className="font-bold">Error loading orders. Please check your connection or login again.</p>
+              <p className="font-bold text-start">Error loading orders. Please check your connection or login again.</p>
           </div>
       )}
 
-      <div className="flex flex-wrap gap-3 bg-white p-2 rounded-[28px] border border-gray-100 shadow-sm w-fit">
+      <div className="flex flex-wrap gap-3 bg-white p-2 rounded-[28px] border border-gray-100 shadow-sm w-fit text-start">
         {['ALL', 'PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((s) => (
           <button
             key={s}
@@ -127,7 +132,7 @@ const AdminOrders = () => {
         ))}
       </div>
 
-      <div className="relative">
+      <div className="relative text-start">
         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
         <input
           className="w-full pl-14 pr-8 py-5 rounded-[32px] bg-white border border-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition font-bold"
@@ -137,40 +142,39 @@ const AdminOrders = () => {
         />
       </div>
 
-      <div className="grid gap-6">
-        {filteredOrders?.map((order: any) => (
-          <motion.div
-            layout
+      <div className="grid gap-6 text-start">
+        {filteredOrders.map((order: any) => (
+          <div
             key={order.id}
-            className="group bg-white rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden"
+            className="group bg-white rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden text-start"
           >
-            <div className="p-8 md:p-10 flex flex-col md:flex-row md:items-center gap-8">
-              <div className="flex-1 flex flex-col md:flex-row md:items-center gap-8">
+            <div className="p-8 md:p-10 flex flex-col md:flex-row md:items-center gap-8 text-start">
+              <div className="flex-1 flex flex-col md:flex-row md:items-center gap-8 text-start">
                 <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
                   <ShoppingBag className="h-6 w-6 text-gray-300 group-hover:text-blue-500" />
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest">#{order.id.substring(0, 8)}</span>
+                <div className="space-y-1 text-start">
+                  <div className="flex items-center gap-3 text-start">
+                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest">#{String(order.id || '').substring(0, 8)}</span>
                     <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${getStatusStyle(order.status)}`}>
                       {order.status}
                     </span>
                   </div>
-                  <h3 className="text-xl font-black text-gray-900">{order.firstName} {order.lastName}</h3>
-                  <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
-                    <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {new Date(order.createdAt).toLocaleDateString()}</span>
+                  <h3 className="text-xl font-black text-gray-900">{order.firstName} {order.lastName || ''}</h3>
+                  <div className="flex items-center gap-4 text-xs font-bold text-gray-400 text-start">
+                    <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</span>
                     <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> {order.city}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-1">
-                <p className="text-2xl font-black text-gray-900">{Number(order.totalAmount).toFixed(0)} DH</p>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{order.items.length} Items</p>
+              <div className="flex flex-col items-end gap-1 text-start">
+                <p className="text-2xl font-black text-gray-900">{Number(order.totalAmount || 0).toFixed(0)} DH</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{order.items?.length || 0} Items</p>
               </div>
 
-              <div className="flex items-center gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-gray-50">
+              <div className="flex items-center gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-gray-50 text-start">
                 <button
                   onClick={() => navigate(`/admin/orders/${order.id}`)}
                   className="p-4 bg-gray-50 text-gray-900 rounded-2xl hover:bg-black hover:text-white transition shadow-sm"
@@ -183,7 +187,7 @@ const AdminOrders = () => {
                 >
                   <Trash2 className="h-5 w-5" />
                 </button>
-                <div className="relative group/select">
+                <div className="relative">
                    <select
                      className="appearance-none bg-blue-600 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest pr-10 cursor-pointer hover:bg-blue-700 transition"
                      value={order.status}
@@ -199,10 +203,10 @@ const AdminOrders = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
 
-        {filteredOrders?.length === 0 && (
+        {filteredOrders.length === 0 && (
           <div className="p-20 text-center border-4 border-dashed border-gray-100 rounded-[60px] space-y-4">
              <AlertCircle className="h-16 w-16 text-gray-100 mx-auto" />
              <p className="text-gray-400 font-black uppercase tracking-widest text-xs">No orders found matching your criteria</p>
