@@ -17,7 +17,7 @@ export const createCoupon = async (req: Request, res: Response) => {
     const { code, discountType, discountValue, minOrderAmount, expiryDate, usageLimit } = req.body;
     const coupon = await prisma.coupon.create({
       data: {
-        code: code.toUpperCase(),
+        code: (code as string).toUpperCase(),
         discountType,
         discountValue,
         minOrderAmount: minOrderAmount || 0,
@@ -37,7 +37,9 @@ export const createCoupon = async (req: Request, res: Response) => {
 export const deleteCoupon = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    await prisma.coupon.delete({ where: { id } });
+    await prisma.coupon.delete({
+      where: { id: id as string }
+    });
     res.json({ message: 'Coupon deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting coupon' });
@@ -51,7 +53,7 @@ export const validateCoupon = async (req: Request, res: Response) => {
     if (!code) return res.status(400).json({ message: 'Code is required' });
 
     const coupon = await prisma.coupon.findUnique({
-      where: { code: code.toUpperCase() }
+      where: { code: (code as string).toUpperCase() }
     });
 
     if (!coupon || !coupon.isActive) {
