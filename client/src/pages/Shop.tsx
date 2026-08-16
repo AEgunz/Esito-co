@@ -30,7 +30,7 @@ const Shop = () => {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 5; // Badge stays for 5 days
+    return diffDays <= 2; // Reduced to 2 days
   };
 
   const { data: categories, isLoading: catsLoading } = useQuery({

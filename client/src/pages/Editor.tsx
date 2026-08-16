@@ -46,7 +46,7 @@ const Editor = () => {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 5;
+    return diffDays <= 2; // Reduced to 2 days
   };
 
   const { data: deliveryCities } = useQuery({
