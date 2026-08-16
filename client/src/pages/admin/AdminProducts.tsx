@@ -20,7 +20,7 @@ const AdminProducts = () => {
     name: '', description: '', price: '', oldPrice: '', size: '',
     categoryId: '', subCategoryId: '', childCategoryId: '', image: '', images: [] as string[],
     colors: [] as {hex: string, name: string, image: string}[],
-    requiresCustomPhotos: false, photoCount: 0, newBadgeDuration: 0
+    requiresCustomPhotos: false, photoCount: 0
   });
 
   const { data: products, isLoading: productsLoading } = useQuery({
@@ -83,8 +83,7 @@ const AdminProducts = () => {
         images: product.images || [],
         colors: normalizedColors,
         requiresCustomPhotos: product.requiresCustomPhotos || false,
-        photoCount: product.photoCount || 0,
-        newBadgeDuration: product.newBadgeDuration || 0
+        photoCount: product.photoCount || 0
       });
     } else {
       setEditingId(null);
@@ -201,23 +200,6 @@ const AdminProducts = () => {
                                 />
                             </motion.div>
                         )}
-
-                        <div className="pt-4 border-t border-blue-100 space-y-2">
-                            <div className="flex justify-between items-center">
-                                <label className="text-[10px] font-black text-red-600 uppercase tracking-widest ml-1">"NEW" Badge Duration (Days)</label>
-                                <span className="text-[9px] font-black bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Manual Control</span>
-                            </div>
-                            <input
-                                type="number"
-                                min="0"
-                                max="30"
-                                className="w-full px-6 py-4 rounded-2xl bg-white border-none outline-none focus:ring-2 focus:ring-red-500 transition font-black text-red-600 shadow-sm"
-                                placeholder="e.g. 5"
-                                value={formData.newBadgeDuration}
-                                onChange={e => setFormData({...formData, newBadgeDuration: parseInt(e.target.value) || 0})}
-                            />
-                            <p className="text-[8px] text-gray-400 font-bold italic ml-1">* Badge disappears automatically after these many days.</p>
-                        </div>
                     </div>
 
                     <div className="col-span-2 space-y-2">
