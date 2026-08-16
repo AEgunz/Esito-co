@@ -83,6 +83,12 @@ const AdminOrders = () => {
     }
   };
 
+  const getImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${SERVER_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   if (isLoading) return (
     <div className="p-20 text-center flex flex-col items-center justify-center gap-4">
         <RefreshCw className="h-10 w-10 animate-spin text-blue-600" />
@@ -150,8 +156,16 @@ const AdminOrders = () => {
           >
             <div className="p-8 md:p-10 flex flex-col md:flex-row md:items-center gap-8 text-start">
               <div className="flex-1 flex flex-col md:flex-row md:items-center gap-8 text-start">
-                <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-                  <ShoppingBag className="h-6 w-6 text-gray-300 group-hover:text-blue-500" />
+                <div className="w-20 h-20 rounded-[28px] bg-gray-50 flex items-center justify-center border-2 border-white shadow-lg overflow-hidden group-hover:border-blue-100 transition-colors shrink-0">
+                  {order.items?.[0]?.product?.image || order.items?.[0]?.customerPhoto ? (
+                      <img
+                        src={getImageUrl(order.items[0].product?.image || (order.items[0].customerPhoto?.startsWith('[') ? JSON.parse(order.items[0].customerPhoto)[0] : order.items[0].customerPhoto))}
+                        className="w-full h-full object-cover"
+                        onError={(e: any) => e.target.src = 'https://via.placeholder.com/80'}
+                      />
+                  ) : (
+                      <ShoppingBag className="h-6 w-6 text-gray-300 group-hover:text-blue-500" />
+                  )}
                 </div>
 
                 <div className="space-y-1 text-start">
