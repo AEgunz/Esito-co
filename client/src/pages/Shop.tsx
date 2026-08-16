@@ -24,6 +24,15 @@ const Shop = () => {
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
+  const isNewProduct = (createdAt: string) => {
+    if (!createdAt) return false;
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= 5; // Badge stays for 5 days
+  };
+
   const { data: categories, isLoading: catsLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => (await api.get('/categories')).data
@@ -224,6 +233,15 @@ const Shop = () => {
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition duration-[1.5s] ease-out"
                       />
+
+                      {isNewProduct(product.createdAt) && (
+                        <div className="absolute top-4 left-4 z-10">
+                            <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl animate-pulse">
+                                NEW
+                            </span>
+                        </div>
+                      )}
+
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
                          <span className="bg-white text-black px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
                       </div>
