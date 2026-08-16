@@ -47,16 +47,16 @@ const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any)
         >
             <Link to={`/product/${product.id}`} className="space-y-4 block">
                 <div className={`${mobileCols === 2 ? 'rounded-[24px]' : 'rounded-[40px]'} aspect-square bg-white overflow-hidden relative border border-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-700`}>
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence>
                         <motion.img
                             key={displayImage}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.4 }}
+                            transition={{ duration: 0.6, ease: "easeInOut" }}
                             src={getImageUrl(displayImage)}
                             alt={product.name}
-                            className="w-full h-full object-cover"
+                            className="absolute inset-0 w-full h-full object-cover"
                         />
                     </AnimatePresence>
 
