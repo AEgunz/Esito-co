@@ -60,7 +60,7 @@ const Cart = () => {
   };
 
   const discount = appliedCoupon ? Number(appliedCoupon.discountAmount) : 0;
-  const grandTotal = cartTotal - discount + Number(deliveryFee);
+  const grandTotal = Math.max(0, cartTotal - discount + deliveryFee);
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
@@ -76,7 +76,8 @@ const Cart = () => {
   useEffect(() => {
     const user = localStorage.getItem('user');
     if (user) {
-      setFormData(prev => ({ ...prev, name: JSON.parse(user).name }));
+      const parsed = JSON.parse(user);
+      setFormData(prev => ({ ...prev, name: parsed.name }));
     }
   }, []);
 
@@ -93,7 +94,7 @@ const Cart = () => {
         }
       }
     };
-    const timer = setTimeout(fetchFee, 1000);
+    const timer = setTimeout(fetchFee, 500);
     return () => clearTimeout(timer);
   }, [formData.city]);
 
@@ -161,7 +162,7 @@ const Cart = () => {
       if (formData.note) message += `*ملاحظة:* ${formData.note}\n`;
       message += `\n*المنتجات:*\n`;
 
-      cart.forEach((item, index) => {
+      cart.forEach((item) => {
         const colorInfo = getColorInfo(item.selectedColor || '');
         const colorDisplay = `${colorInfo.emoji} ${colorInfo.name}`;
 
@@ -175,7 +176,7 @@ const Cart = () => {
                 message += `🖼️ *الصورة ${i+1}:* ${getImageUrl(p).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
             });
         } else {
-            message += `🖼️ *الصورة:* ${getImageUrl(item.image).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
+            message += `🖼️ *الصورة:* ${getImageUrl(item.image || '').replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}\n`;
         }
 
         if (item.customText) message += `📝 *الكتابة:* ${item.customText}\n`;
@@ -183,31 +184,24 @@ const Cart = () => {
       });
 
       if (appliedCoupon) {
-          message += `🎟️ *كود الخصم:* ${appliedCoupon.code} (-${Number(appliedCoupon.discountAmount).toFixed(0)} DH)\n`;
+          message += `🎟️ *كود الخصم:* ${appliedCoupon.code} (-${discount.toFixed(0)} DH)\n`;
       }
       message += `*المجموع الكلي:* ${grandTotal.toFixed(0)} DH\n\n`;
 
-      // Add first image link again at the very end to help WhatsApp generate a preview
       const firstItem = cart[0];
       if (firstItem) {
           const photo = (firstItem.customPhotos && firstItem.customPhotos.length > 0) ? firstItem.customPhotos[0] : firstItem.image;
-          message += `${getImageUrl(photo).replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}`;
+          message += `${getImageUrl(photo || '').replace('esito-co-production.up.railway.app', 'www.estilo-co.ma')}`;
       }
 
-      // 3. Open WhatsApp
       const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-
-      alert('Order placed successfully! Redirecting to WhatsApp...');
-
-      // Use window.location.href for better mobile compatibility
-      window.location.href = whatsappUrl;
+      window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
       clearCart();
       navigate('/order-success');
     } catch (error: any) {
       console.error('Order Error:', error);
-      alert(`Error: ${error.response?.data?.message || 'Could not connect to server. Check your connection.'}`);
+      alert(`Error: ${error.response?.data?.message || 'Could not connect to server.'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -366,7 +360,6 @@ const Cart = () => {
           <div className="bg-black p-8 rounded-[40px] shadow-2xl sticky top-24 space-y-6 border border-white/5 text-start">
             <h2 className="text-xl font-black text-white italic uppercase tracking-tighter border-b border-white/10 pb-4">Order Summary</h2>
 
-            {/* Promo Code Input */}
             <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Promo Code</label>
                 <div className="flex gap-2">

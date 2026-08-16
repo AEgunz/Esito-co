@@ -844,7 +844,7 @@ const Editor = () => {
                <div className="flex justify-between items-center">
                   <span className="text-blue-500 font-black uppercase tracking-widest text-xs italic">Total</span>
                   <span className="text-2xl font-black text-white">
-                    {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) - (appliedCoupon ? Number(appliedCoupon.discountAmount) : 0) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
+                    {Math.max(0, (cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) - (appliedCoupon ? Number(appliedCoupon.discountAmount) : 0) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
                   </span>
                </div>
             </div>
