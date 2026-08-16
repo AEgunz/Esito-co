@@ -17,10 +17,26 @@ export const getProducts = async (req: Request, res: Response) => {
         subCategory: {
           include: { category: true }
         },
-        childCategory: true
+        childCategory: true,
+        _count: {
+            select: { orderItems: true }
+        }
       }
     });
-    res.json(products);
+
+    // Map to include salesCount based on quantity
+    const productsWithSales = await Promise.all(products.map(async (p) => {
+        const aggregation = await prisma.orderItem.aggregate({
+            _sum: { quantity: true },
+            where: { productId: p.id }
+        });
+        return {
+            ...p,
+            salesCount: aggregation._sum.quantity || 0
+        };
+    }));
+
+    res.json(productsWithSales);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching products' });

@@ -1,10 +1,28 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Heart, Box, Award } from 'lucide-react';
+import { ArrowRight, Sparkles, Heart, Box, Award, Flame, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import api, { SERVER_URL } from '../api/axios';
 
 const Home = () => {
   const { t } = useTranslation();
+
+  const { data: topSellers } = useQuery({
+    queryKey: ['top-sellers'],
+    queryFn: async () => {
+        const res = await api.get('/products');
+        return Array.isArray(res.data)
+            ? res.data.filter((p: any) => p.salesCount > 0).sort((a: any, b: any) => b.salesCount - a.salesCount).slice(0, 4)
+            : [];
+    }
+  });
+
+  const getImageUrl = (url: string) => {
+    if (!url) return '';
+    const baseUrl = window.location.hostname.includes('localhost') ? 'http://localhost:5000' : 'https://esito-co-production.up.railway.app';
+    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   return (
     <div className="bg-white text-start">
@@ -62,6 +80,57 @@ const Home = () => {
           <div className="h-[600px] w-[600px] rounded-full bg-blue-400"></div>
         </div>
       </section>
+
+      {/* Top Sellers Section */}
+      {topSellers && topSellers.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 py-24 text-start">
+            <div className="flex justify-between items-end mb-12">
+                <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2 bg-amber-50 px-4 py-1.5 rounded-full border border-amber-100">
+                        <Flame className="h-4 w-4 text-amber-500" />
+                        <span className="text-xs font-black text-amber-700 uppercase tracking-widest italic">Hottest Right Now</span>
+                    </div>
+                    <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-gray-900">Best Sellers</h2>
+                </div>
+                <Link to="/shop" className="hidden md:flex items-center gap-2 text-blue-600 font-black uppercase text-xs tracking-[0.2em] hover:translate-x-2 transition-transform">
+                    View Full Shop <ArrowRight className="h-4 w-4" />
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+                {topSellers.map((product: any, i: number) => (
+                    <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        viewport={{ once: true }}
+                        className="group"
+                    >
+                        <Link to={`/product/${product.id}`} className="space-y-4 block">
+                            <div className="relative aspect-square bg-gray-50 rounded-[40px] overflow-hidden border border-gray-100 group-hover:shadow-2xl transition-all duration-700">
+                                <img src={getImageUrl(product.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]" />
+                                <div className="absolute top-4 right-4 z-10">
+                                    <span className="bg-white/90 backdrop-blur-md text-black px-3 py-1 rounded-full font-black text-[8px] uppercase tracking-widest shadow-sm">
+                                        {product.salesCount} Sold
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="px-2 space-y-1">
+                                <h3 className="font-black text-gray-900 uppercase italic text-sm truncate">{product.name}</h3>
+                                <div className="flex justify-between items-center">
+                                    <span className="font-black text-blue-600">{Number(product.price).toFixed(0)} DH</span>
+                                    <div className="bg-gray-100 p-2 rounded-xl group-hover:bg-black group-hover:text-white transition-colors">
+                                        <ShoppingBag className="h-3.5 w-3.5" />
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    </motion.div>
+                ))}
+            </div>
+          </section>
+      )}
 
       {/* Featured Categories */}
       <section className="max-w-7xl mx-auto px-4 py-24 border-t border-gray-50">

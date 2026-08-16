@@ -10,7 +10,9 @@ const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any)
     const [currentImageIndex, setCurrentImageIndex] = useState(-1);
     const [isHovered, setIsHovered] = useState(false);
     const cardRef = useRef(null);
-    const isInView = useInView(cardRef, { amount: 0.6 }); // Trigger when 60% is visible
+    const isInView = useInView(cardRef, { amount: 0.6 });
+
+    const isBestSeller = product.salesCount >= 3; // Define threshold
 
     const cycleImages = useMemo(() => {
         const imgs = [];
@@ -66,9 +68,17 @@ const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any)
                     </AnimatePresence>
 
                     {isNewProduct(product) && (
-                        <div className="absolute top-4 left-4 z-10">
+                        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                             <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl animate-pulse">
                                 NEW
+                            </span>
+                        </div>
+                    )}
+
+                    {isBestSeller && (
+                        <div className="absolute top-4 right-4 z-10">
+                            <span className="bg-amber-400 text-black px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl border border-amber-500">
+                                🔥 Best Seller
                             </span>
                         </div>
                     )}
