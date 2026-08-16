@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { SERVER_URL } from '../api/axios';
 import AdminProducts from './admin/AdminProducts';
 import AdminOrders from './admin/AdminOrders';
 import AdminOrderDetail from './admin/AdminOrderDetail';
@@ -17,8 +19,15 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [liveVisitors, setLiveVisitors] = useState(0);
 
   useEffect(() => {
+    // Socket for live tracking
+    const socket = io(SERVER_URL);
+    socket.on('live-count', (count: number) => {
+        setLiveVisitors(count);
+    });
+
     const user = localStorage.getItem('user');
     if (user) {
       try {
@@ -87,7 +96,15 @@ const AdminDashboard = () => {
           })}
         </nav>
 
-        <div className="absolute bottom-10 left-0 right-0 px-10">
+        <div className="absolute bottom-10 left-0 right-0 px-10 space-y-4">
+            <div className="p-6 bg-emerald-50 rounded-[24px] border border-emerald-100 flex justify-between items-center group cursor-pointer hover:bg-emerald-100 transition-colors">
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
+                    <p className="text-2xl font-black text-emerald-900 leading-none">{liveVisitors}</p>
+                </div>
+                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+            </div>
+
             <div className="p-6 bg-blue-50 rounded-[24px] border border-blue-100">
                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Status</p>
                 <div className="flex items-center gap-2">
