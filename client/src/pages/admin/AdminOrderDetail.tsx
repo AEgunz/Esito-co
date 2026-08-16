@@ -95,7 +95,18 @@ const AdminOrderDetail = () => {
                 <h2 className="text-xl font-black flex items-center gap-3"><User className="h-5 w-5 text-blue-600" /> Customer</h2>
                 <div className="space-y-4 text-start">
                     <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name</p><p className="font-black text-gray-900 text-lg">{order.firstName} {order.lastName}</p></div>
-                    <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone / WhatsApp</p><p className="font-black text-green-600 text-lg">{order.phone}</p></div>
+                    <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone / WhatsApp</p>
+                        <a
+                            href={`https://wa.me/212${order.phone.replace(/^0/, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-black text-green-600 text-lg hover:underline flex items-center gap-2"
+                        >
+                            {order.phone}
+                            <span className="bg-green-100 text-[8px] px-2 py-0.5 rounded-full">Chat on WhatsApp</span>
+                        </a>
+                    </div>
                     <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">City / Delivery</p><p className="font-black text-gray-900 text-lg uppercase italic">{order.city}</p></div>
                     <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Address</p><p className="font-medium text-gray-600 leading-relaxed">{order.address}</p></div>
                 </div>

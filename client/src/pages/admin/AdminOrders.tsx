@@ -3,7 +3,7 @@ import api from '../../api/axios';
 import {
   Package, Search, Clock, CheckCircle, Truck,
   ChevronRight, AlertCircle, ShoppingBag, Calendar,
-  Download, Trash2, Eye, RefreshCw
+  Download, Trash2, Eye, RefreshCw, MessageSquare
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -176,7 +176,15 @@ const AdminOrders = () => {
                     </span>
                   </div>
                   <h3 className="text-xl font-black text-gray-900">{order.firstName} {order.lastName || ''}</h3>
-                  <div className="flex items-center gap-4 text-xs font-bold text-gray-400 text-start">
+                  <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-400 text-start">
+                    <a
+                      href={`https://wa.me/212${(order.phone || '').replace(/^0/, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 text-green-600 hover:underline"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" /> {order.phone}
+                    </a>
                     <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</span>
                     <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> {order.city}</span>
                   </div>
