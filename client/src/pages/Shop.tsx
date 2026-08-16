@@ -7,8 +7,8 @@ import { LayoutGrid, Square, Grid2X2, ChevronRight, ArrowLeft } from 'lucide-rea
 import { useTranslation } from 'react-i18next';
 
 const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any) => {
-    const [currentImageIndex, setCurrentImageIndex] = useState(-1); // -1 means main image
-    const [isHovered, setIsHovered] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(-1);
+    const [isActive, setIsActive] = useState(false);
 
     const cycleImages = useMemo(() => {
         const imgs = [];
@@ -23,15 +23,15 @@ const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any)
 
     useEffect(() => {
         let interval: any;
-        if ((isHovered || window.innerWidth < 768) && cycleImages.length > 1) {
+        if (isActive && cycleImages.length > 1) {
             interval = setInterval(() => {
                 setCurrentImageIndex((prev) => (prev + 1) % cycleImages.length);
-            }, 1500);
+            }, 1200);
         } else {
             setCurrentImageIndex(-1);
         }
         return () => clearInterval(interval);
-    }, [isHovered, cycleImages]);
+    }, [isActive, cycleImages]);
 
     const displayImage = currentImageIndex === -1 ? product.image : cycleImages[currentImageIndex];
 
@@ -39,8 +39,10 @@ const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any)
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={() => setIsActive(true)}
+            onMouseLeave={() => setIsActive(false)}
+            onTouchStart={() => setIsActive(true)}
+            onTouchEnd={() => setIsActive(false)}
             className="group"
         >
             <Link to={`/product/${product.id}`} className="space-y-4 block">
