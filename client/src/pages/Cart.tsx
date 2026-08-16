@@ -1,15 +1,21 @@
 import { useCart } from '../context/CartContext';
-import { Trash2, ShoppingBag, MapPin, Truck, RefreshCw } from 'lucide-react';
+import { Trash2, ShoppingBag, MapPin, Truck, RefreshCw, Tag, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import api from '../api/axios';
+import api, { SERVER_URL } from '../api/axios';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Cart = () => {
   const { cart, removeFromCart, cartTotal, clearCart } = useCart();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
+
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [isCouponLoading, setIsCouponLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -35,6 +41,26 @@ const Cart = () => {
     : [];
 
   const [deliveryFee, setDeliveryFee] = useState(30.00); // Default
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput) return;
+    setIsCouponLoading(true);
+    try {
+        const res = await api.post('/coupons/validate', { code: couponInput, orderAmount: cartTotal });
+        if (res.data.valid) {
+            setAppliedCoupon(res.data);
+            alert(`Promo Code Applied! -${Number(res.data.discountAmount).toFixed(0)} DH`);
+        }
+    } catch (err: any) {
+        alert(err.response?.data?.message || 'Invalid Promo Code');
+        setAppliedCoupon(null);
+    } finally {
+        setIsCouponLoading(false);
+    }
+  };
+
+  const discount = appliedCoupon ? Number(appliedCoupon.discountAmount) : 0;
+  const grandTotal = cartTotal - discount + Number(deliveryFee);
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
@@ -71,8 +97,6 @@ const Cart = () => {
     return () => clearTimeout(timer);
   }, [formData.city]);
 
-  const grandTotal = cartTotal + deliveryFee;
-
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -101,7 +125,9 @@ const Cart = () => {
         phone: formData.phone,
         address: formData.address,
         city: formData.city,
-        note: formData.note
+        note: formData.note,
+        couponCode: appliedCoupon?.code,
+        discountAmount: discount
       };
 
       const res = await api.post('/orders', orderData);
@@ -156,6 +182,9 @@ const Cart = () => {
         message += `\n`;
       });
 
+      if (appliedCoupon) {
+          message += `🎟️ *كود الخصم:* ${appliedCoupon.code} (-${Number(appliedCoupon.discountAmount).toFixed(0)} DH)\n`;
+      }
       message += `*المجموع الكلي:* ${grandTotal.toFixed(0)} DH\n\n`;
 
       // Add first image link again at the very end to help WhatsApp generate a preview
@@ -195,17 +224,17 @@ const Cart = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="text-4xl font-black mb-8 tracking-tighter italic uppercase">{t('cart.checkout')}</h1>
+    <div className="max-w-6xl mx-auto px-4 py-12 text-start">
+      <h1 className="text-4xl font-black mb-8 tracking-tighter italic uppercase text-start">{t('cart.checkout')}</h1>
 
       <div className="grid lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-[32px] border shadow-sm space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-2 uppercase tracking-tight">
+          <div className="bg-white p-8 rounded-[32px] border shadow-sm space-y-6 text-start">
+            <h2 className="text-xl font-black flex items-center gap-2 uppercase tracking-tight text-start">
               <MapPin className="h-5 w-5 text-blue-600" /> {t('editor.shippingInfo')}
             </h2>
-            <form id="checkout-form" onSubmit={handleCheckout} className="grid md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
+            <form id="checkout-form" onSubmit={handleCheckout} className="grid md:grid-cols-2 gap-6 text-start">
+              <div className="md:col-span-2 text-start">
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.fullName')}</label>
                 <input
                   type="text"
@@ -216,7 +245,7 @@ const Cart = () => {
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                 />
               </div>
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 text-start">
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.address')}</label>
                 <textarea
                   required
@@ -227,7 +256,7 @@ const Cart = () => {
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
                 />
               </div>
-              <div>
+              <div className="text-start">
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.city')}</label>
                 <div className="relative">
                     <input
@@ -274,7 +303,7 @@ const Cart = () => {
                     </AnimatePresence>
                 </div>
               </div>
-              <div>
+              <div className="text-start">
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.phone')}</label>
                 <input
                   type="tel"
@@ -285,7 +314,7 @@ const Cart = () => {
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 />
               </div>
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 text-start">
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('editor.note')}</label>
                 <input
                   type="text"
@@ -298,7 +327,7 @@ const Cart = () => {
             </form>
           </div>
 
-          <div className="bg-white rounded-[32px] border shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[32px] border shadow-sm overflow-hidden text-start">
             <div className="p-6 border-b bg-gray-50/50">
                <h2 className="font-black uppercase tracking-widest text-xs text-gray-400">{t('common.items')}</h2>
             </div>
@@ -306,7 +335,7 @@ const Cart = () => {
               {cart.map((item) => (
                 <li key={item.cartId} className="p-6 flex items-center gap-6">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50">
-                    <img src={item.image || 'https://via.placeholder.com/100'} className="w-full h-full object-contain" />
+                    <img src={getImageUrl(item.image || '')} className="w-full h-full object-contain" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-black text-gray-900 leading-tight">{item.name}</h3>
@@ -333,14 +362,44 @@ const Cart = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-1">
-          <div className="bg-black p-8 rounded-[40px] shadow-2xl sticky top-24 space-y-6 border border-white/5">
-            <h2 className="text-xl font-black text-white italic uppercase tracking-tighter border-b border-white/10 pb-4">{t('common.total')}</h2>
-            <div className="space-y-4">
+        <div className="lg:col-span-1 text-start">
+          <div className="bg-black p-8 rounded-[40px] shadow-2xl sticky top-24 space-y-6 border border-white/5 text-start">
+            <h2 className="text-xl font-black text-white italic uppercase tracking-tighter border-b border-white/10 pb-4">Order Summary</h2>
+
+            {/* Promo Code Input */}
+            <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Promo Code</label>
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                        <input
+                            className="w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all uppercase placeholder:text-gray-600 text-sm"
+                            placeholder="Enter Code"
+                            value={couponInput}
+                            onChange={(e) => setCouponInput(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        onClick={handleApplyCoupon}
+                        disabled={isCouponLoading || !couponInput || appliedCoupon}
+                        className="bg-white text-black px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition disabled:opacity-50"
+                    >
+                        {isCouponLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : (appliedCoupon ? <Check className="h-4 w-4 text-green-600" /> : 'Apply')}
+                    </button>
+                </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-white/10">
               <div className="flex justify-between">
                 <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{t('common.subtotal')}</span>
                 <span className="text-white font-black">{cartTotal.toFixed(0)} {t('common.dh')}</span>
               </div>
+              {appliedCoupon && (
+                 <div className="flex justify-between text-green-400">
+                    <span className="font-bold uppercase tracking-widest text-[10px]">Discount ({appliedCoupon.code})</span>
+                    <span className="font-black">-{discount.toFixed(0)} {t('common.dh')}</span>
+                 </div>
+              )}
               <div className="flex justify-between">
                 <span className="flex items-center gap-1 text-gray-400 font-bold uppercase tracking-widest text-[10px]"><Truck className="h-4 w-4 text-blue-500" /> {t('common.shipping')}</span>
                 <span className="text-white font-black">{deliveryFee.toFixed(0)} {t('common.dh')}</span>

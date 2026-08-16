@@ -15,7 +15,9 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       phone,
       address,
       city,
-      note
+      note,
+      couponCode,
+      discountAmount
     } = req.body;
 
     const userId = req.user?.id;
@@ -33,6 +35,8 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         address,
         city,
         note,
+        couponCode,
+        discountAmount: discountAmount || 0,
         items: {
           create: items.map((item: any) => ({
             productId: item.productId,
@@ -48,6 +52,18 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       },
       include: { items: true }
     });
+
+    // 1.1 Increment coupon usage if used
+    if (couponCode) {
+      try {
+        await prisma.coupon.update({
+          where: { code: couponCode.toUpperCase() },
+          data: { usedCount: { increment: 1 } }
+        });
+      } catch (e) {
+        console.error('Failed to increment coupon count');
+      }
+    }
 
     // 2. Try creating AMEEX Parcel (Background/Fail-safe)
     try {

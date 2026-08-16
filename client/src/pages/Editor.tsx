@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, MapPin, User, Truck, RefreshCw,
   ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, AlertCircle,
-  Ruler, X, Star, MessageSquare, Upload, Type
+  Ruler, X, Star, MessageSquare, Upload, Type, Tag
 } from 'lucide-react';
 import api, { SERVER_URL } from '../api/axios';
 import { useCart } from '../context/CartContext';
@@ -31,6 +31,9 @@ const Editor = () => {
   const [isCityListOpen, setIsCityListOpen] = useState(false);
   const [customText, setCustomText] = useState('');
   const [customPhotos, setCustomPhotos] = useState<string[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [isCouponLoading, setIsCouponLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
@@ -141,6 +144,24 @@ const Editor = () => {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponInput) return;
+    setIsCouponLoading(true);
+    try {
+        const currentAmount = cartCount > 0 ? cartTotal : (Number(product.price) * quantity);
+        const res = await api.post('/coupons/validate', { code: couponInput, orderAmount: currentAmount });
+        if (res.data.valid) {
+            setAppliedCoupon(res.data);
+            alert(`Promo Code Applied! -${Number(res.data.discountAmount).toFixed(0)} DH`);
+        }
+    } catch (err: any) {
+        alert(err.response?.data?.message || 'Invalid Promo Code');
+        setAppliedCoupon(null);
+    } finally {
+        setIsCouponLoading(false);
+    }
+  };
+
   const handleAddToCart = () => {
     const requiredPhotos = product.photoCount || (product.requiresCustomPhotos ? 1 : 0);
     if (product.requiresCustomPhotos && customPhotos.length < requiredPhotos) {
@@ -198,7 +219,9 @@ const Editor = () => {
           customText: customText
         }];
 
-    const finalTotal = (cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + shippingFee;
+    const subtotal = cartCount > 0 ? cartTotal : (Number(product.price) * quantity);
+    const discount = appliedCoupon ? Number(appliedCoupon.discountAmount) : 0;
+    const finalTotal = subtotal - discount + shippingFee;
 
     setIsSubmitting(true);
     try {
@@ -211,7 +234,9 @@ const Editor = () => {
         city: formData.city,
         address: formData.address,
         note: formData.note,
-        email: 'customer@estilo-co.com'
+        email: 'customer@estilo-co.com',
+        couponCode: appliedCoupon?.code,
+        discountAmount: discount
       });
 
       const newOrder = res.data;
@@ -274,6 +299,9 @@ const Editor = () => {
         message += `\n`;
       });
 
+      if (appliedCoupon) {
+          message += `🎟️ *كود الخصم:* ${appliedCoupon.code} (-${Number(appliedCoupon.discountAmount).toFixed(0)} DH)\n`;
+      }
       message += `*المجموع الكلي:* ${finalTotal.toFixed(0)} DH\n\n`;
 
       // Add first image link again at the very end to help WhatsApp generate a preview
@@ -761,6 +789,28 @@ const Editor = () => {
 
               <textarea className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.address')} rows={2} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
               <input className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all shadow-inner" placeholder={t('editor.note')} value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
+
+              {/* Promo Code Input */}
+              <div className="pt-2">
+                  <div className="flex gap-2">
+                      <div className="relative flex-1">
+                          <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                          <input
+                            className="w-full pl-11 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-600 font-bold transition-all uppercase placeholder:text-gray-600"
+                            placeholder="Promo Code"
+                            value={couponInput}
+                            onChange={(e) => setCouponInput(e.target.value)}
+                          />
+                      </div>
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={isCouponLoading || !couponInput || appliedCoupon}
+                        className="bg-white text-black px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition disabled:opacity-50"
+                      >
+                        {isCouponLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : (appliedCoupon ? <Check className="h-4 w-4 text-green-600" /> : 'Apply')}
+                      </button>
+                  </div>
+              </div>
             </div>
 
             {/* Order Summary Calculation */}
@@ -780,6 +830,12 @@ const Editor = () => {
                     <span className="text-white font-black">{(Number(product.price) * quantity).toFixed(0)} {t('common.dh')}</span>
                  </div>
                )}
+               {appliedCoupon && (
+                 <div className="flex justify-between text-sm text-green-400 font-bold">
+                    <span className="uppercase tracking-widest text-[9px]">Discount ({appliedCoupon.code})</span>
+                    <span>-{Number(appliedCoupon.discountAmount).toFixed(0)} {t('common.dh')}</span>
+                 </div>
+               )}
                <div className="flex justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">{t('common.shipping')}</span>
                   <span className="text-white font-black">{formData.city ? (deliveryCities?.find((c:any) => c.city === formData.city)?.fee || 30) : 0} {t('common.dh')}</span>
@@ -788,7 +844,7 @@ const Editor = () => {
                <div className="flex justify-between items-center">
                   <span className="text-blue-500 font-black uppercase tracking-widest text-xs italic">Total</span>
                   <span className="text-2xl font-black text-white">
-                    {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
+                    {((cartCount > 0 ? cartTotal : (Number(product.price) * quantity)) - (appliedCoupon ? Number(appliedCoupon.discountAmount) : 0) + (formData.city ? (Number(deliveryCities?.find((c:any) => c.city === formData.city)?.fee) || 30) : 0)).toFixed(0)} {t('common.dh')}
                   </span>
                </div>
             </div>

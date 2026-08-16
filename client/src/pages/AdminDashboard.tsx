@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag } from 'lucide-react';
 import AdminProducts from './admin/AdminProducts';
 import AdminOrders from './admin/AdminOrders';
 import AdminOrderDetail from './admin/AdminOrderDetail';
@@ -10,6 +10,7 @@ import AdminCustomers from './admin/AdminCustomers';
 import AdminCategories from './admin/AdminCategories';
 import AdminReviews from './admin/AdminReviews';
 import AdminAmeex from './admin/AdminAmeex';
+import AdminCoupons from './admin/AdminCoupons';
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
     { name: 'Products', icon: ShoppingBag, path: '/admin/products' },
     { name: 'Customers', icon: Users, path: '/admin/customers' },
     { name: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
+    { name: 'Promo Codes', icon: Tag, path: '/admin/coupons' },
     { name: 'Delivery Fees', icon: MapPin, path: '/admin/delivery' },
     { name: 'Categories', icon: List, path: '/admin/categories' },
   ];
@@ -104,6 +106,7 @@ const AdminDashboard = () => {
           <Route path="/customers" element={<AdminCustomers />} />
           <Route path="/reviews" element={<AdminReviews />} />
           <Route path="/ameex" element={<AdminAmeex />} />
+          <Route path="/coupons" element={<AdminCoupons />} />
           <Route path="/delivery" element={<AdminDelivery />} />
           <Route path="/categories" element={<AdminCategories />} />
           <Route path="/orders" element={<AdminOrders />} />
