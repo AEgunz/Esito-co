@@ -92,7 +92,8 @@ const AdminProducts = () => {
         name: '', description: '', price: '', oldPrice: '', size: '',
         categoryId: '', subCategoryId: '', childCategoryId: '',
         image: '', images: [], colors: [],
-        requiresCustomPhotos: false, photoCount: 0
+        requiresCustomPhotos: false, photoCount: 0,
+        newBadgeDuration: 3 // Set 3 days by default for new products
       });
     }
     setIsModalOpen(true);

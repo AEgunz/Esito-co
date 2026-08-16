@@ -120,12 +120,15 @@ const Shop = () => {
   };
 
   const isNewProduct = (product: any) => {
-    if (!product?.createdAt || !product?.newBadgeDuration) return false;
+    if (!product?.createdAt) return false;
+    const duration = Number(product.newBadgeDuration) || 0;
+    if (duration <= 0) return false;
+
     const date = new Date(product.createdAt);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= product.newBadgeDuration;
+    return diffDays <= duration;
   };
 
   const { data: categories, isLoading: catsLoading } = useQuery({
