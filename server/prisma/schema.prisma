@@ -87,6 +87,7 @@ model Product {
   size            String?
   requiresCustomPhotos Boolean @default(false)
   photoCount          Int     @default(0)
+  newBadgeDuration    Int     @default(0) // Duration in days for 'NEW' badge
   subCategoryId   String
   subCategory     SubCategory    @relation(fields: [subCategoryId], references: [id])
   childCategoryId String?

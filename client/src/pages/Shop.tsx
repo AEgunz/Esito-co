@@ -24,13 +24,13 @@ const Shop = () => {
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
-  const isNewProduct = (createdAt: string) => {
-    if (!createdAt) return false;
-    const date = new Date(createdAt);
+  const isNewProduct = (product: any) => {
+    if (!product?.createdAt || !product?.newBadgeDuration) return false;
+    const date = new Date(product.createdAt);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 2; // Reduced to 2 days
+    return diffDays <= product.newBadgeDuration;
   };
 
   const { data: categories, isLoading: catsLoading } = useQuery({
@@ -234,7 +234,7 @@ const Shop = () => {
                         className="w-full h-full object-cover group-hover:scale-110 transition duration-[1.5s] ease-out"
                       />
 
-                      {isNewProduct(product.createdAt) && (
+                      {isNewProduct(product) && (
                         <div className="absolute top-4 left-4 z-10">
                             <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl animate-pulse">
                                 NEW

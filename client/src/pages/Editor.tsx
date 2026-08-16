@@ -40,13 +40,13 @@ const Editor = () => {
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '', userName: '' });
   const [isReviewSubmitting, setIsReviewSubmitting] = useState(false);
 
-  const isNewProduct = (createdAt: string) => {
-    if (!createdAt) return false;
-    const date = new Date(createdAt);
+  const isNewProduct = (product: any) => {
+    if (!product?.createdAt || !product?.newBadgeDuration) return false;
+    const date = new Date(product.createdAt);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 2; // Reduced to 2 days
+    return diffDays <= product.newBadgeDuration;
   };
 
   const { data: deliveryCities } = useQuery({
@@ -434,12 +434,11 @@ const Editor = () => {
           )}
         </div>
 
-        {/* Product Info */}
         <div className="space-y-8 text-start">
           <div className="space-y-3 text-start">
             <div className="flex items-center gap-3">
                 <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter leading-tight uppercase italic">{product.name}</h1>
-                {isNewProduct(product.createdAt) && (
+                {isNewProduct(product) && (
                     <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest animate-pulse shrink-0">NEW</span>
                 )}
             </div>
