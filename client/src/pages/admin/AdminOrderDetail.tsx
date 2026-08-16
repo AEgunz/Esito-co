@@ -98,7 +98,7 @@ const AdminOrderDetail = () => {
                     <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone / WhatsApp</p>
                         <a
-                            href={`https://wa.me/212${order.phone.replace(/^0/, '')}`}
+                            href={`https://wa.me/212${(order.phone || '').replace(/^0/, '')}`}
                             target="_blank"
                             rel="noreferrer"
                             className="font-black text-green-600 text-lg hover:underline flex items-center gap-2"
