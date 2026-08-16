@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import api, { SERVER_URL } from '../api/axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { LayoutGrid, Square, Grid2X2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(-1);
-    const [isActive, setIsActive] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const cardRef = useRef(null);
+    const isInView = useInView(cardRef, { amount: 0.6 }); // Trigger when 60% is visible
 
     const cycleImages = useMemo(() => {
         const imgs = [];
@@ -23,26 +25,29 @@ const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any)
 
     useEffect(() => {
         let interval: any;
-        if (isActive && cycleImages.length > 1) {
+        const isMobile = window.innerWidth < 768;
+        // On Mobile: Cycle when in view. On PC: Cycle when hovered.
+        const shouldCycle = (isMobile && isInView) || (!isMobile && isHovered);
+
+        if (shouldCycle && cycleImages.length > 1) {
             interval = setInterval(() => {
                 setCurrentImageIndex((prev) => (prev + 1) % cycleImages.length);
-            }, 1200);
+            }, 1500);
         } else {
             setCurrentImageIndex(-1);
         }
         return () => clearInterval(interval);
-    }, [isActive, cycleImages]);
+    }, [isHovered, isInView, cycleImages]);
 
     const displayImage = currentImageIndex === -1 ? product.image : cycleImages[currentImageIndex];
 
     return (
         <motion.div
+            ref={cardRef}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            onMouseEnter={() => setIsActive(true)}
-            onMouseLeave={() => setIsActive(false)}
-            onTouchStart={() => setIsActive(true)}
-            onTouchEnd={() => setIsActive(false)}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className="group"
         >
             <Link to={`/product/${product.id}`} className="space-y-4 block">
@@ -119,15 +124,6 @@ const Shop = () => {
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
-  const isNewProduct = (product: any) => {
-    if (!product?.createdAt) return false;
-    const date = new Date(product.createdAt);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 3; // Fixed 3 days automatically
-  };
-
   const { data: categories, isLoading: catsLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => (await api.get('/categories')).data
@@ -138,22 +134,23 @@ const Shop = () => {
     queryFn: async () => (await api.get('/products')).data
   });
 
-  // Extremely robust category matching
+  const isNewProduct = (product: any) => {
+    if (!product?.createdAt) return false;
+    const date = new Date(product.createdAt);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= 3; // Fixed 3 days automatically
+  };
+
   const selectedCategory = useMemo(() => {
     if (!categories || !categoryName) return null;
-
-    const normalize = (str: string) =>
-      decodeURIComponent(str)
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '') // Remove everything except letters and numbers
-        .trim();
-
+    const normalize = (str: string) => decodeURIComponent(str).toLowerCase().replace(/[^a-z0-9]/g, '').trim();
     const target = normalize(categoryName);
     return categories.find((c: any) => normalize(c.name) === target);
   }, [categories, categoryName]);
 
   const handleCategoryClick = (cat: any) => {
-    // Navigate with a clean slug
     const slug = cat.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
     navigate(`/shop/${slug}`);
     setSelectedSubCategory(null);
@@ -182,35 +179,18 @@ const Shop = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-20">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-20 text-start">
       <AnimatePresence mode="wait">
         {!selectedCategory ? (
-          /* Step 1: Category Selection Grid (Main View) */
-          <motion.div
-            key="main-collections-grid"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-16"
-          >
+          <motion.div key="main-collections-grid" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-16">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic text-gray-900">{t('shop.title')}</h1>
               <p className="text-gray-400 font-medium text-lg italic">{t('shop.subtitle')}</p>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {categories?.map((cat: any) => (
-                <motion.button
-                  key={cat.id}
-                  whileHover={{ y: -8 }}
-                  onClick={() => handleCategoryClick(cat)}
-                  className="group relative aspect-[4/5] bg-white rounded-[48px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 text-left"
-                >
-                  <img
-                    src={getImageUrl(cat.image)}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]"
-                    alt={cat.name}
-                  />
+                <motion.button key={cat.id} whileHover={{ y: -8 }} onClick={() => handleCategoryClick(cat)} className="group relative aspect-[4/5] bg-white rounded-[48px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 text-left">
+                  <img src={getImageUrl(cat.image)} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" alt={cat.name} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-10">
                     <h3 className="text-4xl font-black text-white tracking-tight mb-2 uppercase italic">{cat.name}</h3>
                     <p className="text-gray-300 text-sm font-medium line-clamp-2 mb-6">{cat.description}</p>
@@ -223,39 +203,17 @@ const Shop = () => {
             </div>
           </motion.div>
         ) : (
-          /* Step 2: Product View for Selected Category (Inside Navigation) */
-          <motion.div
-            key={`category-view-${selectedCategory.id}`}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
-          >
-            {/* Header & Breadcrumb */}
+          <motion.div key={`category-view-${selectedCategory.id}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4 text-start">
-                    <button
-                        onClick={() => navigate('/shop')}
-                        className="flex items-center gap-2 text-gray-400 hover:text-black transition font-black text-[10px] uppercase tracking-widest group bg-gray-50 px-4 py-2 rounded-full w-fit"
-                    >
+                    <button onClick={() => navigate('/shop')} className="flex items-center gap-2 text-gray-400 hover:text-black transition font-black text-[10px] uppercase tracking-widest group bg-gray-50 px-4 py-2 rounded-full w-fit">
                         <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform rtl:rotate-180" /> {t('shop.back')}
                     </button>
                     <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-none uppercase italic">{selectedCategory.name}</h2>
                 </div>
-
                 <div className="flex items-center gap-4 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 shadow-inner">
-                    <button
-                      onClick={() => setMobileCols(1)}
-                      className={`p-2.5 rounded-xl transition-all ${mobileCols === 1 ? 'bg-white shadow-md text-black' : 'text-gray-300 hover:text-gray-600'}`}
-                    >
-                      <Square className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setMobileCols(2)}
-                      className={`p-2.5 rounded-xl transition-all ${mobileCols === 2 ? 'bg-white shadow-md text-black' : 'text-gray-300 hover:text-gray-600'}`}
-                    >
-                      <Grid2X2 className="h-4 w-4" />
-                    </button>
+                    <button onClick={() => setMobileCols(1)} className={`p-2.5 rounded-xl transition-all ${mobileCols === 1 ? 'bg-white shadow-md text-black' : 'text-gray-300 hover:text-gray-600'}`}><Square className="h-4 w-4" /></button>
+                    <button onClick={() => setMobileCols(2)} className={`p-2.5 rounded-xl transition-all ${mobileCols === 2 ? 'bg-white shadow-md text-black' : 'text-gray-300 hover:text-gray-600'}`}><Grid2X2 className="h-4 w-4" /></button>
                     <div className="w-px h-4 bg-gray-200 mx-1" />
                     <div className="px-3 flex items-center gap-2 text-start">
                       <LayoutGrid className="h-3.5 w-3.5 text-gray-400" />
@@ -263,65 +221,27 @@ const Shop = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Filtering Tabs */}
             <div className="space-y-4 pt-6 border-t border-gray-100 text-start">
                 {subCategories.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                        <button
-                            onClick={() => { setSelectedSubCategory(null); setSelectedChildCategory(null); }}
-                            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${!selectedSubCategory ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-gray-400 border border-gray-100 hover:border-gray-200'}`}
-                        >
-                            {t('shop.allCategories')}
-                        </button>
+                        <button onClick={() => { setSelectedSubCategory(null); setSelectedChildCategory(null); }} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${!selectedSubCategory ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-gray-400 border border-gray-100 hover:border-gray-200'}`}>{t('shop.allCategories')}</button>
                         {subCategories.map((sub: any) => (
-                            <button
-                                key={sub.id}
-                                onClick={() => { setSelectedSubCategory(sub); setSelectedChildCategory(null); }}
-                                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedSubCategory?.id === sub.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-100 scale-105' : 'bg-white text-gray-400 border border-gray-100 hover:border-gray-200'}`}
-                            >
-                                {sub.name}
-                            </button>
+                            <button key={sub.id} onClick={() => { setSelectedSubCategory(sub); setSelectedChildCategory(null); }} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedSubCategory?.id === sub.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-100 scale-105' : 'bg-white text-gray-400 border border-gray-100 hover:border-gray-200'}`}>{sub.name}</button>
                         ))}
                     </div>
                 )}
-
                 {availableChildCategories.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-wrap gap-2 py-3 px-5 bg-gray-50/50 rounded-3xl border border-gray-100 inline-flex"
-                    >
-                        <button
-                            onClick={() => setSelectedChildCategory(null)}
-                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${!selectedChildCategory ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                        >
-                            {t('shop.allTypes')}
-                        </button>
+                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2 py-3 px-5 bg-gray-50/50 rounded-3xl border border-gray-100 inline-flex">
+                        <button onClick={() => setSelectedChildCategory(null)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${!selectedChildCategory ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t('shop.allTypes')}</button>
                         {availableChildCategories.map((child: any) => (
-                            <button
-                                key={child.id}
-                                onClick={() => setSelectedChildCategory(child)}
-                                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${selectedChildCategory?.id === child.id ? 'bg-black text-white shadow-sm' : 'text-gray-400 hover:bg-gray-100'}`}
-                            >
-                                {child.name}
-                            </button>
+                            <button key={child.id} onClick={() => setSelectedChildCategory(child)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${selectedChildCategory?.id === child.id ? 'bg-black text-white shadow-sm' : 'text-gray-400 hover:bg-gray-100'}`}>{child.name}</button>
                         ))}
                     </motion.div>
                 )}
             </div>
-
-            {/* Products Grid */}
             <div className={`grid ${mobileCols === 1 ? 'grid-cols-1' : 'grid-cols-2'} sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10`}>
-              {filteredProducts?.map((product: any, i: number) => (
-                <ProductCard
-                    key={product.id}
-                    product={product}
-                    mobileCols={mobileCols}
-                    getImageUrl={getImageUrl}
-                    isNewProduct={isNewProduct}
-                    t={t}
-                />
+              {filteredProducts?.map((product: any) => (
+                <ProductCard key={product.id} product={product} mobileCols={mobileCols} getImageUrl={getImageUrl} isNewProduct={isNewProduct} t={t} />
               ))}
               {filteredProducts.length === 0 && (
                 <div className="py-40 text-center space-y-4">
