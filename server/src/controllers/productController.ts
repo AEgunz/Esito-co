@@ -51,7 +51,12 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, description, price, oldPrice, image, images, subCategoryId, childCategoryId, size, maskType, colors, requiresCustomPhotos, photoCount } = req.body;
+    const {
+        name, description, price, oldPrice, image, images,
+        subCategoryId, childCategoryId, size, maskType,
+        colors, requiresCustomPhotos, photoCount, newBadgeDuration
+    } = req.body;
+
     const product = await prisma.product.create({
       data: {
         name,
@@ -66,7 +71,8 @@ export const createProduct = async (req: Request, res: Response) => {
         maskType,
         colors: colors || [],
         requiresCustomPhotos: Boolean(requiresCustomPhotos),
-        photoCount: Number(photoCount) || 0
+        photoCount: Number(photoCount) || 0,
+        newBadgeDuration: Number(newBadgeDuration) || 0
       },
     });
     res.status(201).json(product);
@@ -82,7 +88,12 @@ export const createProduct = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { name, description, price, oldPrice, image, images, subCategoryId, childCategoryId, size, maskType, colors, requiresCustomPhotos, photoCount } = req.body;
+    const {
+        name, description, price, oldPrice, image, images,
+        subCategoryId, childCategoryId, size, maskType,
+        colors, requiresCustomPhotos, photoCount, newBadgeDuration
+    } = req.body;
+
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -98,7 +109,8 @@ export const updateProduct = async (req: Request, res: Response) => {
         maskType,
         colors: colors || [],
         requiresCustomPhotos: Boolean(requiresCustomPhotos),
-        photoCount: Number(photoCount) || 0
+        photoCount: Number(photoCount) || 0,
+        newBadgeDuration: Number(newBadgeDuration) || 0
       },
     });
     res.json(product);
