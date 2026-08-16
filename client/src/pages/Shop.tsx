@@ -2,9 +2,102 @@ import { useQuery } from '@tanstack/react-query';
 import api, { SERVER_URL } from '../api/axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { LayoutGrid, Square, Grid2X2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+const ProductCard = ({ product, mobileCols, getImageUrl, isNewProduct, t }: any) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(-1); // -1 means main image
+    const [isHovered, setIsHovered] = useState(false);
+
+    const cycleImages = useMemo(() => {
+        const imgs = [];
+        if (product.image) imgs.push(product.image);
+        if (product.colors && Array.isArray(product.colors)) {
+            product.colors.forEach((c: any) => {
+                if (c.image) imgs.push(c.image);
+            });
+        }
+        return imgs;
+    }, [product]);
+
+    useEffect(() => {
+        let interval: any;
+        if ((isHovered || window.innerWidth < 768) && cycleImages.length > 1) {
+            interval = setInterval(() => {
+                setCurrentImageIndex((prev) => (prev + 1) % cycleImages.length);
+            }, 1500);
+        } else {
+            setCurrentImageIndex(-1);
+        }
+        return () => clearInterval(interval);
+    }, [isHovered, cycleImages]);
+
+    const displayImage = currentImageIndex === -1 ? product.image : cycleImages[currentImageIndex];
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="group"
+        >
+            <Link to={`/product/${product.id}`} className="space-y-4 block">
+                <div className={`${mobileCols === 2 ? 'rounded-[24px]' : 'rounded-[40px]'} aspect-square bg-white overflow-hidden relative border border-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-700`}>
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={displayImage}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            src={getImageUrl(displayImage)}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                        />
+                    </AnimatePresence>
+
+                    {isNewProduct(product) && (
+                        <div className="absolute top-4 left-4 z-10">
+                            <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl animate-pulse">
+                                NEW
+                            </span>
+                        </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <span className="bg-white text-black px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
+                    </div>
+                </div>
+
+                <div className={`${mobileCols === 2 ? 'px-1' : 'px-4'} space-y-2 text-start`}>
+                    <div className="flex justify-between items-start gap-2">
+                        <h3 className={`${mobileCols === 2 ? 'text-[11px]' : 'text-lg'} font-black text-gray-900 leading-tight truncate flex-1 uppercase italic`}>{product.name}</h3>
+                        <span className={`${mobileCols === 2 ? 'text-[13px]' : 'text-xl'} font-black text-blue-600 shrink-0`}>{Number(product.price).toFixed(0)} {t('common.dh')}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 border-t border-gray-50 pt-2">
+                        <p className="text-gray-400 font-bold uppercase tracking-tighter text-[8px] truncate">
+                            {product.size}
+                        </p>
+                        {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
+                            <div className="flex gap-0.5">
+                                {product.colors.slice(0, 3).map((c: any, idx: number) => (
+                                    <div
+                                        key={idx}
+                                        className="w-2.5 h-2.5 rounded-full border border-gray-200 shadow-sm"
+                                        style={{ backgroundColor: c.hex || c }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </Link>
+        </motion.div>
+    );
+};
 
 const Shop = () => {
   const { t } = useTranslation();
@@ -219,59 +312,14 @@ const Shop = () => {
             {/* Products Grid */}
             <div className={`grid ${mobileCols === 1 ? 'grid-cols-1' : 'grid-cols-2'} sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10`}>
               {filteredProducts?.map((product: any, i: number) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="group"
-                >
-                  <Link to={`/product/${product.id}`} className="space-y-4 block">
-                    <div className={`${mobileCols === 2 ? 'rounded-[24px]' : 'rounded-[40px]'} aspect-square bg-white overflow-hidden relative border border-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-700`}>
-                      <img
-                        src={getImageUrl(product.image)}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-[1.5s] ease-out"
-                      />
-
-                      {isNewProduct(product) && (
-                        <div className="absolute top-4 left-4 z-10">
-                            <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl animate-pulse">
-                                NEW
-                            </span>
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                         <span className="bg-white text-black px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">{t('shop.shopNow')}</span>
-                      </div>
-                    </div>
-
-                    <div className={`${mobileCols === 2 ? 'px-1' : 'px-4'} space-y-2 text-start`}>
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className={`${mobileCols === 2 ? 'text-[11px]' : 'text-lg'} font-black text-gray-900 leading-tight truncate flex-1 uppercase italic`}>{product.name}</h3>
-                        <span className={`${mobileCols === 2 ? 'text-[13px]' : 'text-xl'} font-black text-blue-600 shrink-0`}>{Number(product.price).toFixed(0)} {t('common.dh')}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 border-t border-gray-50 pt-2">
-                        <p className="text-gray-400 font-bold uppercase tracking-tighter text-[8px] truncate">
-                          {product.size}
-                        </p>
-                        {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
-                          <div className="flex gap-0.5">
-                            {product.colors.slice(0, 3).map((c: any, idx: number) => (
-                              <div
-                                key={idx}
-                                className="w-2.5 h-2.5 rounded-full border border-gray-200 shadow-sm"
-                                style={{ backgroundColor: c.hex || c }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
+                <ProductCard
+                    key={product.id}
+                    product={product}
+                    mobileCols={mobileCols}
+                    getImageUrl={getImageUrl}
+                    isNewProduct={isNewProduct}
+                    t={t}
+                />
               ))}
               {filteredProducts.length === 0 && (
                 <div className="py-40 text-center space-y-4">
