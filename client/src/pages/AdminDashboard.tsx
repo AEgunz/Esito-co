@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag } from 'lucide-react';
+import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { SERVER_URL } from '../api/axios';
+
+// Pages
 import AdminProducts from './admin/AdminProducts';
 import AdminOrders from './admin/AdminOrders';
 import AdminOrderDetail from './admin/AdminOrderDetail';
@@ -23,40 +25,66 @@ const AdminDashboard = () => {
   const [liveVisitors, setLiveVisitors] = useState(0);
 
   useEffect(() => {
-    // Socket for live tracking
-    const socket = io(SERVER_URL);
-    socket.on('live-count', (count: number) => {
-        setLiveVisitors(count);
-    });
+    const checkAdmin = () => {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) {
+        navigate('/login');
+        return;
+      }
 
-    const user = localStorage.getItem('user');
-    if (user) {
       try {
-        const userData = JSON.parse(user);
-        if (userData.role === 'ADMIN') {
+        const userData = JSON.parse(userStr);
+        if (userData && userData.role === 'ADMIN') {
           setIsAdmin(true);
         } else {
           navigate('/');
         }
       } catch (e) {
+        console.error('Admin Check Error:', e);
         navigate('/login');
       }
-    } else {
-      navigate('/login');
+      setLoading(false);
+    };
+
+    checkAdmin();
+
+    // Socket for live tracking - with error handling
+    let socket: any;
+    try {
+        socket = io(SERVER_URL, {
+            transports: ['websocket', 'polling'],
+            reconnectionAttempts: 3
+        });
+        socket.on('live-count', (count: number) => {
+            setLiveVisitors(count);
+        });
+    } catch (err) {
+        console.error('Socket Error:', err);
     }
-    setLoading(false);
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
   }, [navigate]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xs font-black uppercase tracking-widest text-gray-400">Verifying Admin Access...</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gray-400">Loading Dashboard...</p>
         </div>
     </div>
   );
 
-  if (!isAdmin) return null;
+  if (!isAdmin) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-10 text-center">
+        <div className="space-y-4">
+            <h1 className="text-2xl font-black uppercase italic">Access Denied</h1>
+            <p className="text-gray-500">You do not have permission to view this page.</p>
+            <button onClick={() => navigate('/')} className="bg-black text-white px-8 py-3 rounded-2xl font-bold uppercase text-xs">Back to Home</button>
+        </div>
+    </div>
+  );
 
   const menuItems = [
     { name: 'Overview', icon: PieChart, path: '/admin' },
@@ -72,9 +100,9 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA]">
+    <div className="flex min-h-screen bg-[#FAFAFA] text-start">
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen">
+      <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen shrink-0">
         <div className="p-10">
           <Link to="/">
             <img src="/logo.png" alt="Estilo-co" className="h-16 md:h-20 w-auto object-contain" />
@@ -99,26 +127,26 @@ const AdminDashboard = () => {
         </nav>
 
         <div className="absolute bottom-10 left-0 right-0 px-10 space-y-4">
-            <div className="p-6 bg-emerald-50 rounded-[24px] border border-emerald-100 flex justify-between items-center group cursor-pointer hover:bg-emerald-100 transition-colors">
-                <div className="space-y-1">
+            <div className="p-6 bg-emerald-50 rounded-[24px] border border-emerald-100 flex justify-between items-center">
+                <div className="space-y-1 text-start">
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
                     <p className="text-2xl font-black text-emerald-900 leading-none">{liveVisitors}</p>
                 </div>
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping" />
             </div>
 
-            <div className="p-6 bg-blue-50 rounded-[24px] border border-blue-100">
+            <div className="p-6 bg-blue-50 rounded-[24px] border border-blue-100 text-start">
                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Status</p>
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span className="text-xs font-bold text-blue-900">System Online</span>
+                    <span className="text-xs font-bold text-blue-900 uppercase">System Online</span>
                 </div>
             </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 lg:p-16 overflow-y-auto">
+      <main className="flex-1 p-8 lg:p-16 overflow-y-auto text-start">
         <Routes>
           <Route path="/" element={<AdminStats />} />
           <Route path="/products" element={<AdminProducts />} />
