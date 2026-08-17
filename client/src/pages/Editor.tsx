@@ -897,7 +897,7 @@ const Editor = () => {
               </div>
               <div className="overflow-y-auto max-h-[75vh]">
                 <img
-                  src="/size-guide.jpg"
+                  src="/size-guide.png"
                   alt="Guide"
                   className="w-full h-auto"
                 />
