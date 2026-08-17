@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import React, { Suspense } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -14,6 +14,33 @@ import { CartProvider } from './context/CartContext';
 import CartDrawer from './components/CartDrawer';
 import Footer from './components/Footer';
 
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen bg-white text-start flex flex-col">
+      {!isAdminPath && <Navbar />}
+      {!isAdminPath && <CartDrawer />}
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop/:categoryName" element={<Shop />} />
+          <Route path="/product/:productId" element={<Editor />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/corporate" element={<Corporate />} />
+          <Route path="/order-success" element={<Success />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+        </Routes>
+      </main>
+      {!isAdminPath && <Footer />}
+    </div>
+  );
+};
+
 function App() {
   return (
     <Suspense fallback={
@@ -23,25 +50,7 @@ function App() {
     }>
       <CartProvider>
         <Router>
-          <div className="min-h-screen bg-white text-start flex flex-col">
-            <Navbar />
-            <CartDrawer />
-            <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/shop/:categoryName" element={<Shop />} />
-                <Route path="/product/:productId" element={<Editor />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/corporate" element={<Corporate />} />
-                <Route path="/order-success" element={<Success />} />
-                <Route path="/admin/*" element={<AdminDashboard />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <AppContent />
         </Router>
       </CartProvider>
     </Suspense>

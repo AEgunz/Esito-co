@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown, Wallet } from 'lucide-react';
+import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown, Wallet, Home } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { SERVER_URL } from '../api/axios';
 
@@ -88,6 +88,7 @@ const AdminDashboard = () => {
   );
 
   const menuItems = [
+    { name: 'Back to Shop', icon: Home, path: '/' },
     { name: 'Overview', icon: PieChart, path: '/admin' },
     { name: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
     { name: 'AMEEX Shipping', icon: Truck, path: '/admin/ameex' },
@@ -110,38 +111,38 @@ const AdminDashboard = () => {
             <img src="/logo.png" alt="Estilo-co" className="h-16 md:h-20 w-auto object-contain" />
           </Link>
         </div>
-        <nav className="px-6 space-y-2 overflow-y-auto flex-1 custom-scrollbar pb-10">
+        <nav className="px-6 space-y-1 overflow-y-auto flex-1 custom-scrollbar pb-6">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
                 <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-300 font-bold ${
+                className={`flex items-center space-x-4 px-6 py-3.5 rounded-2xl transition-all duration-300 font-bold ${
                     isActive ? 'bg-black text-white shadow-xl shadow-gray-200' : 'text-gray-400 hover:text-black hover:bg-gray-50'
                 }`}
                 >
-                <item.icon className={`h-5 w-5 ${isActive ? 'text-blue-400' : ''}`} />
-                <span className="text-sm uppercase tracking-widest">{item.name}</span>
+                <item.icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : ''}`} />
+                <span className="text-xs uppercase tracking-widest">{item.name}</span>
                 </Link>
             );
           })}
         </nav>
 
-        <div className="p-10 space-y-4 shrink-0 border-t border-gray-50 bg-white">
-            <div className="p-6 bg-emerald-50 rounded-[24px] border border-emerald-100 flex justify-between items-center">
-                <div className="space-y-1 text-start">
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
-                    <p className="text-2xl font-black text-emerald-900 leading-none">{liveVisitors}</p>
+        <div className="p-8 space-y-3 shrink-0 border-t border-gray-50 bg-white">
+            <div className="p-4 bg-emerald-50 rounded-[20px] border border-emerald-100 flex justify-between items-center">
+                <div className="space-y-0.5 text-start">
+                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
+                    <p className="text-xl font-black text-emerald-900 leading-none">{liveVisitors}</p>
                 </div>
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping" />
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
             </div>
 
-            <div className="p-6 bg-blue-50 rounded-[24px] border border-blue-100 text-start">
-                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Status</p>
+            <div className="p-4 bg-blue-50 rounded-[20px] border border-blue-100 text-start">
+                <p className="text-[8px] font-black text-blue-600 uppercase tracking-widest mb-0.5">Status</p>
                 <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span className="text-xs font-bold text-blue-900 uppercase">System Online</span>
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span className="text-[10px] font-bold text-blue-900 uppercase">System Online</span>
                 </div>
             </div>
         </div>
