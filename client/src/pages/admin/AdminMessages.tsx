@@ -7,6 +7,8 @@ import { useState } from 'react';
 const AdminMessages = () => {
   const queryClient = useQueryClient();
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
+  const [replyMessage, setReplyMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   const { data: inquiries, isLoading } = useQuery({
     queryKey: ['admin-inquiries'],
@@ -25,6 +27,21 @@ const AdminMessages = () => {
     mutationFn: ({ id, status }: { id: string, status: string }) => api.patch(`/inquiries/${id}`, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] })
   });
+
+  const handleReply = async () => {
+    if (!replyMessage.trim() || !selectedInquiry) return;
+    setIsSending(true);
+    try {
+        await api.post(`/inquiries/${selectedInquiry.id}/reply`, { replyMessage });
+        queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
+        setReplyMessage('');
+        alert('Reply sent via email!');
+    } catch (err: any) {
+        alert(err.response?.data?.message || 'Failed to send email');
+    } finally {
+        setIsSending(false);
+    }
+  };
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
@@ -120,7 +137,25 @@ const AdminMessages = () => {
                             </div>
                         )}
 
-                        <div className="pt-6 border-t border-gray-50 flex gap-3">
+                        <div className="pt-6 border-t border-gray-100 space-y-4">
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Send Email Reply</p>
+                            <textarea
+                                className="w-full px-5 py-4 rounded-3xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm"
+                                rows={4}
+                                placeholder="Type your response..."
+                                value={replyMessage}
+                                onChange={e => setReplyMessage(e.target.value)}
+                            />
+                            <button
+                                onClick={handleReply}
+                                disabled={isSending || !replyMessage.trim()}
+                                className="w-full bg-black text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 transition flex items-center justify-center gap-3 disabled:opacity-50"
+                            >
+                                {isSending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Send Email Reply</>}
+                            </button>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-50 flex gap-3">
                             <button onClick={() => {if(confirm('Delete message?')) deleteMutation.mutate(selectedInquiry.id)}} className="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition">Delete</button>
                             <button onClick={() => updateStatusMutation.mutate({ id: selectedInquiry.id, status: 'READ' })} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition">Mark as Handled</button>
                         </div>
