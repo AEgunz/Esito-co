@@ -29,8 +29,8 @@ export const updateInquiryStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status } = req.body;
     const inquiry = await prisma.inquiry.update({
-      where: { id },
-      data: { status }
+      where: { id: id as string },
+      data: { status: status as string }
     });
     res.json(inquiry);
   } catch (error) {
@@ -41,7 +41,9 @@ export const updateInquiryStatus = async (req: Request, res: Response) => {
 export const deleteInquiry = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    await prisma.inquiry.delete({ where: { id } });
+    await prisma.inquiry.delete({
+      where: { id: id as string }
+    });
     res.json({ message: 'Inquiry deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting inquiry' });
