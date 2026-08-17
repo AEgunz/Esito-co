@@ -26,6 +26,8 @@ const Home = () => {
 
   return (
     <div className="bg-white text-start">
+      <h1 className="sr-only">متجر Estilo-co لبيع التيشرتات والملابس الرجالية وطباعة DTF في المغرب</h1>
+
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">

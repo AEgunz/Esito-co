@@ -88,6 +88,7 @@ const Editor = () => {
 
   useEffect(() => {
     if (product) {
+      document.title = `${product.name} | Estilo-co Morocco`;
       const images: string[] = [];
       if (product.image) images.push(getImageUrl(product.image));
 
