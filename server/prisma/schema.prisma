@@ -165,6 +165,15 @@ model Inquiry {
   createdAt DateTime @default(now())
 }
 
+model Expense {
+  id          String   @id @default(uuid())
+  description String
+  amount      Decimal
+  category    String   // e.g., "Marketing", "Supplies", "Shipping", "Other"
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
 model DeliveryFee {
   id        String   @id @default(uuid())
   city      String   @unique

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown } from 'lucide-react';
+import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown, Wallet } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { SERVER_URL } from '../api/axios';
 
@@ -16,6 +16,7 @@ import AdminReviews from './admin/AdminReviews';
 import AdminAmeex from './admin/AdminAmeex';
 import AdminCoupons from './admin/AdminCoupons';
 import AdminMessages from './admin/AdminMessages';
+import AdminFinances from './admin/AdminFinances';
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -95,6 +96,7 @@ const AdminDashboard = () => {
     { name: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
     { name: 'Promo Codes', icon: Tag, path: '/admin/coupons' },
     { name: 'Inbox', icon: Mail, path: '/admin/messages' },
+    { name: 'Finances', icon: Wallet, path: '/admin/finance' },
     { name: 'Delivery Fees', icon: MapPin, path: '/admin/delivery' },
     { name: 'Categories', icon: List, path: '/admin/categories' },
   ];
@@ -155,6 +157,7 @@ const AdminDashboard = () => {
           <Route path="/ameex" element={<AdminAmeex />} />
           <Route path="/coupons" element={<AdminCoupons />} />
           <Route path="/messages" element={<AdminMessages />} />
+          <Route path="/finance" element={<AdminFinances />} />
           <Route path="/delivery" element={<AdminDelivery />} />
           <Route path="/categories" element={<AdminCategories />} />
           <Route path="/orders" element={<AdminOrders />} />
