@@ -153,6 +153,18 @@ model OrderItem {
   isSpecialDesign Boolean        @default(false)
 }
 
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  subject   String
+  message   String   @db.Text
+  logoUrl   String?  @db.Text
+  status    String   @default("NEW")
+  createdAt DateTime @default(now())
+}
+
 model DeliveryFee {
   id        String   @id @default(uuid())
   city      String   @unique

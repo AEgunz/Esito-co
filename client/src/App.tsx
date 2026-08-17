@@ -7,6 +7,7 @@ import Editor from './pages/Editor';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Cart from './pages/Cart';
+import Corporate from './pages/Corporate';
 import AdminDashboard from './pages/AdminDashboard';
 import Success from './pages/Success';
 import { CartProvider } from './context/CartContext';
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/corporate" element={<Corporate />} />
                 <Route path="/order-success" element={<Success />} />
                 <Route path="/admin/*" element={<AdminDashboard />} />
               </Routes>

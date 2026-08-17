@@ -13,6 +13,7 @@ import AdminCategories from './admin/AdminCategories';
 import AdminReviews from './admin/AdminReviews';
 import AdminAmeex from './admin/AdminAmeex';
 import AdminCoupons from './admin/AdminCoupons';
+import AdminMessages from './admin/AdminMessages';
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -65,6 +66,7 @@ const AdminDashboard = () => {
     { name: 'Customers', icon: Users, path: '/admin/customers' },
     { name: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
     { name: 'Promo Codes', icon: Tag, path: '/admin/coupons' },
+    { name: 'Inbox', icon: Mail, path: '/admin/messages' },
     { name: 'Delivery Fees', icon: MapPin, path: '/admin/delivery' },
     { name: 'Categories', icon: List, path: '/admin/categories' },
   ];
@@ -124,6 +126,7 @@ const AdminDashboard = () => {
           <Route path="/reviews" element={<AdminReviews />} />
           <Route path="/ameex" element={<AdminAmeex />} />
           <Route path="/coupons" element={<AdminCoupons />} />
+          <Route path="/messages" element={<AdminMessages />} />
           <Route path="/delivery" element={<AdminDelivery />} />
           <Route path="/categories" element={<AdminCategories />} />
           <Route path="/orders" element={<AdminOrders />} />
