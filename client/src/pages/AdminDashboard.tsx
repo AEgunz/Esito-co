@@ -104,13 +104,13 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-[#FAFAFA] text-start">
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen shrink-0">
-        <div className="p-10">
+      <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen shrink-0 flex flex-col">
+        <div className="p-10 shrink-0">
           <Link to="/">
             <img src="/logo.png" alt="Estilo-co" className="h-16 md:h-20 w-auto object-contain" />
           </Link>
         </div>
-        <nav className="px-6 space-y-2">
+        <nav className="px-6 space-y-2 overflow-y-auto flex-1 custom-scrollbar pb-10">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
           })}
         </nav>
 
-        <div className="absolute bottom-10 left-0 right-0 px-10 space-y-4">
+        <div className="p-10 space-y-4 shrink-0 border-t border-gray-50 bg-white">
             <div className="p-6 bg-emerald-50 rounded-[24px] border border-emerald-100 flex justify-between items-center">
                 <div className="space-y-1 text-start">
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
