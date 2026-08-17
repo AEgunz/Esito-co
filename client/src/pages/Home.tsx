@@ -156,8 +156,54 @@ const Home = () => {
           ))}
         </div>
       </section>
+
+      {/* Corporate B2B Banner */}
+      <section className="max-w-7xl mx-auto px-4 pb-32">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="bg-blue-600 rounded-[60px] p-12 md:p-24 relative overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-12"
+          >
+              <div className="space-y-6 relative z-10 max-w-xl">
+                  <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic leading-none tracking-tighter">
+                      {t('corporate.title')}
+                  </h2>
+                  <p className="text-blue-100 text-lg font-medium">
+                      {t('corporate.subtitle')}
+                  </p>
+                  <Link to="/corporate" className="inline-flex items-center gap-3 bg-white text-blue-600 px-10 py-5 rounded-full font-black uppercase text-xs tracking-widest hover:bg-gray-100 transition-colors shadow-2xl">
+                      {t('corporate.send')} <ArrowRight className="h-4 w-4" />
+                  </Link>
+              </div>
+              <div className="relative z-10 bg-white/10 p-8 rounded-[40px] backdrop-blur-md border border-white/20">
+                  <Flame className="h-20 w-20 text-white opacity-20 absolute -top-6 -right-6 rotate-12" />
+                  <div className="space-y-4">
+                      <div className="flex items-center gap-4 text-white">
+                          <CheckCircle2 className="h-6 w-6 text-blue-300" />
+                          <span className="font-bold uppercase tracking-widest text-[10px]">Bulk Discount</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-white">
+                          <CheckCircle2 className="h-6 w-6 text-blue-300" />
+                          <span className="font-bold uppercase tracking-widest text-[10px]">Custom Logo Printing</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-white">
+                          <CheckCircle2 className="h-6 w-6 text-blue-300" />
+                          <span className="font-bold uppercase tracking-widest text-[10px]">Fast Scale Delivery</span>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Decoration */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          </motion.div>
+      </section>
     </div>
   );
 };
+
+const CheckCircle2 = ({ className }: { className?: string }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+);
 
 export default Home;
