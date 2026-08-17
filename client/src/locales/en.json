@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "shop": "Shop",
+    "corporate": "B2B / Corporate",
     "admin": "Admin",
     "cart": "Cart"
   },
@@ -96,5 +97,19 @@
     "rights": "All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service"
+  },
+  "corporate": {
+    "title": "Custom B2B Solutions",
+    "subtitle": "High quality custom apparel for your business.",
+    "contactInfo": "Contact Info",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "logo": "Logo",
+    "message": "Message",
+    "messagePlaceholder": "Tell us what you need",
+    "send": "Send Request",
+    "successTitle": "Request Received!",
+    "successMessage": "We will contact you shortly."
   }
 }
