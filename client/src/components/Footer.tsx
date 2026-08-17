@@ -55,11 +55,13 @@ const Footer = () => {
                   <span className="font-bold text-sm">0693-360625</span>
                 </a>
               </li>
-              <li className="flex items-center gap-3 text-gray-400">
-                <div className="bg-white/5 p-2 rounded-lg">
-                  <Mail className="h-4 w-4 text-blue-500" />
-                </div>
-                <span className="font-bold text-sm lowercase">contact@estilo-co.ma</span>
+              <li>
+                <Link to="/corporate" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                  <div className="bg-white/5 p-2 rounded-lg group-hover:bg-blue-600 transition-colors">
+                    <Mail className="h-4 w-4 text-blue-500 group-hover:text-white" />
+                  </div>
+                  <span className="font-bold text-sm lowercase">contact@estilo-co.ma</span>
+                </Link>
               </li>
               <li className="flex items-center gap-3 text-gray-400">
                 <div className="bg-white/5 p-2 rounded-lg">
