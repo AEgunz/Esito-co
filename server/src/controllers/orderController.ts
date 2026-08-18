@@ -129,8 +129,12 @@ export const getAllOrders = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' }
     });
     res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching all orders' });
+  } catch (error: any) {
+    console.error('GetAllOrders Error:', error);
+    res.status(500).json({
+        message: 'Database Error. Did you run prisma db push?',
+        error: error.message
+    });
   }
 };
 

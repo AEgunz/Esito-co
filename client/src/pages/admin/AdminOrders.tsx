@@ -126,13 +126,18 @@ const AdminOrders = () => {
       </div>
 
       {isError && (
-          <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center gap-4">
-              <AlertCircle className="h-6 w-6" />
-              <div className="text-start">
-                <p className="font-bold">Error loading orders.</p>
-                <p className="text-[10px] uppercase font-black opacity-70">
+          <div className="p-10 bg-red-50 text-red-600 rounded-[40px] border-4 border-red-100 flex flex-col items-center gap-6 text-center">
+              <AlertCircle className="h-20 w-20" />
+              <div className="space-y-2">
+                <h2 className="text-3xl font-black uppercase italic">Critical Database Error</h2>
+                <p className="font-bold text-lg">Your database is out of sync with the latest updates.</p>
+                <div className="bg-white/50 p-6 rounded-3xl mt-4 space-y-4">
+                    <p className="text-sm font-medium">To fix this, please go to your <b>Railway Dashboard</b>, open the <b>Terminal</b> of your server, and run:</p>
+                    <code className="block bg-black text-green-400 p-4 rounded-xl font-mono text-sm">npx prisma db push</code>
+                </div>
+                <p className="text-[10px] uppercase font-black opacity-50 mt-6">
                     {/* @ts-ignore */}
-                    Reason: {error?.response?.data?.message || error?.message || 'Database mismatch or Server Error'}
+                    Technical Error: {error?.response?.data?.error || error?.message || 'Server 500'}
                 </p>
               </div>
           </div>

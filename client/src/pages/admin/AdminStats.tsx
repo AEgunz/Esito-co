@@ -3,7 +3,7 @@ import api from '../../api/axios';
 import { ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, Sparkles } from 'lucide-react';
 
 const AdminStats = () => {
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, isError } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
         const res = await api.get('/orders/all');
@@ -24,6 +24,16 @@ const AdminStats = () => {
   ];
 
   if (isLoading) return <div className="p-20 text-center animate-pulse font-bold text-gray-300 uppercase tracking-widest">Calculating Stats...</div>;
+
+  if (isError) return (
+      <div className="p-20 text-center space-y-6">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto" />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black uppercase italic">Dashboard Sync Error</h2>
+            <p className="text-gray-500 max-w-md mx-auto">Database tables are missing. Please run <b>npx prisma db push</b> in Railway Terminal to fix this.</p>
+          </div>
+      </div>
+  );
 
   return (
     <div className="space-y-12 text-start">
