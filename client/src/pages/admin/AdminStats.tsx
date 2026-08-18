@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../../api/axios';
-import { ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, Sparkles } from 'lucide-react';
+import { ShoppingCart, DollarSign, Package, Users, TrendingUp, Clock, Sparkles, AlertCircle } from 'lucide-react';
 
 const AdminStats = () => {
   const { data: orders, isLoading, isError } = useQuery({
