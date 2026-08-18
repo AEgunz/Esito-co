@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown, Wallet, Home } from 'lucide-react';
+import { ShoppingBag, List, Users, ShoppingCart, Truck, PieChart, MessageSquare, MapPin, Tag, Mail, LogOut, LayoutDashboard, Globe, ChevronDown, Wallet, Home, Menu, X } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { SERVER_URL } from '../api/axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Pages
 import AdminProducts from './admin/AdminProducts';
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [liveVisitors, setLiveVisitors] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const checkAdmin = () => {
@@ -103,68 +105,97 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA] text-start">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-100 hidden lg:block sticky top-0 h-screen shrink-0 flex flex-col">
-        <div className="p-10 shrink-0">
-          <Link to="/">
-            <img src="/logo.png" alt="Estilo-co" className="h-16 md:h-20 w-auto object-contain" />
-          </Link>
-        </div>
-        <nav className="px-6 space-y-1 overflow-y-auto flex-1 custom-scrollbar pb-6">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-                <Link
-                key={item.name}
-                to={item.path}
-                className={`flex items-center space-x-4 px-6 py-3.5 rounded-2xl transition-all duration-300 font-bold ${
-                    isActive ? 'bg-black text-white shadow-xl shadow-gray-200' : 'text-gray-400 hover:text-black hover:bg-gray-50'
-                }`}
-                >
-                <item.icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : ''}`} />
-                <span className="text-xs uppercase tracking-widest">{item.name}</span>
-                </Link>
-            );
-          })}
-        </nav>
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] text-start">
+      {/* Mobile Admin Header */}
+      <div className="lg:hidden bg-white border-b border-gray-100 p-6 flex justify-between items-center sticky top-0 z-[110]">
+        <Link to="/">
+          <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+        </Link>
+        <button onClick={() => setIsSidebarOpen(true)} className="p-2 bg-gray-50 rounded-xl">
+          <Menu className="h-6 w-6 text-gray-900" />
+        </button>
+      </div>
 
-        <div className="p-8 space-y-3 shrink-0 border-t border-gray-50 bg-white">
-            <div className="p-4 bg-emerald-50 rounded-[20px] border border-emerald-100 flex justify-between items-center">
-                <div className="space-y-0.5 text-start">
-                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
-                    <p className="text-xl font-black text-emerald-900 leading-none">{liveVisitors}</p>
-                </div>
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-            </div>
+      <div className="flex flex-1">
+        {/* Sidebar Overlay (Mobile) */}
+        <AnimatePresence>
+            {isSidebarOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[120] lg:hidden"
+                />
+            )}
+        </AnimatePresence>
 
-            <div className="p-4 bg-blue-50 rounded-[20px] border border-blue-100 text-start">
-                <p className="text-[8px] font-black text-blue-600 uppercase tracking-widest mb-0.5">Status</p>
-                <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                    <span className="text-[10px] font-bold text-blue-900 uppercase">System Online</span>
-                </div>
-            </div>
-        </div>
-      </aside>
+        {/* Sidebar */}
+        <aside className={`fixed inset-y-0 left-0 w-72 bg-white border-r border-gray-100 z-[130] transform transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen shrink-0 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-10 shrink-0 flex justify-between items-center">
+            <Link to="/">
+              <img src="/logo.png" alt="Estilo-co" className="h-16 md:h-20 w-auto object-contain" />
+            </Link>
+            <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 bg-gray-50 rounded-full">
+                <X className="h-5 w-5 text-gray-400" />
+            </button>
+          </div>
+          <nav className="px-6 space-y-1 overflow-y-auto flex-1 custom-scrollbar pb-6">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                  <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={`flex items-center space-x-4 px-6 py-3.5 rounded-2xl transition-all duration-300 font-bold ${
+                      isActive ? 'bg-black text-white shadow-xl shadow-gray-200' : 'text-gray-400 hover:text-black hover:bg-gray-50'
+                  }`}
+                  >
+                  <item.icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : ''}`} />
+                  <span className="text-sm uppercase tracking-widest">{item.name}</span>
+                  </Link>
+              );
+            })}
+          </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8 lg:p-16 overflow-y-auto text-start">
-        <Routes>
-          <Route path="/" element={<AdminStats />} />
-          <Route path="/products" element={<AdminProducts />} />
-          <Route path="/customers" element={<AdminCustomers />} />
-          <Route path="/reviews" element={<AdminReviews />} />
-          <Route path="/ameex" element={<AdminAmeex />} />
-          <Route path="/coupons" element={<AdminCoupons />} />
-          <Route path="/messages" element={<AdminMessages />} />
-          <Route path="/finance" element={<AdminFinances />} />
-          <Route path="/delivery" element={<AdminDelivery />} />
-          <Route path="/categories" element={<AdminCategories />} />
-          <Route path="/orders" element={<AdminOrders />} />
-          <Route path="/orders/:id" element={<AdminOrderDetail />} />
-        </Routes>
-      </main>
+          <div className="p-8 space-y-3 shrink-0 border-t border-gray-50 bg-white">
+              <div className="p-4 bg-emerald-50 rounded-[20px] border border-emerald-100 flex justify-between items-center">
+                  <div className="space-y-0.5 text-start">
+                      <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Visitors</p>
+                      <p className="text-xl font-black text-emerald-900 leading-none">{liveVisitors}</p>
+                  </div>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-[20px] border border-blue-100 text-start">
+                  <p className="text-[8px] font-black text-blue-600 uppercase tracking-widest mb-0.5">Status</p>
+                  <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                      <span className="text-[10px] font-bold text-blue-900 uppercase">System Online</span>
+                  </div>
+              </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 md:p-8 lg:p-16 overflow-y-auto text-start">
+          <Routes>
+            <Route path="/" element={<AdminStats />} />
+            <Route path="/products" element={<AdminProducts />} />
+            <Route path="/customers" element={<AdminCustomers />} />
+            <Route path="/reviews" element={<AdminReviews />} />
+            <Route path="/ameex" element={<AdminAmeex />} />
+            <Route path="/coupons" element={<AdminCoupons />} />
+            <Route path="/messages" element={<AdminMessages />} />
+            <Route path="/finance" element={<AdminFinances />} />
+            <Route path="/delivery" element={<AdminDelivery />} />
+            <Route path="/categories" element={<AdminCategories />} />
+            <Route path="/orders" element={<AdminOrders />} />
+            <Route path="/orders/:id" element={<AdminOrderDetail />} />
+          </Routes>
+        </main>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, LayoutDashboard, ShoppingBag, Globe, ChevronDown } from 'lucide-react';
+import { ShoppingCart, User, LogOut, LayoutDashboard, ShoppingBag, Globe, ChevronDown, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -10,6 +10,7 @@ const Navbar = () => {
   const { t, i18n } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,13 +51,21 @@ const Navbar = () => {
     <nav className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-[100]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-24 md:h-32 items-center">
-          <Link to="/" className="flex items-center group py-2">
-            <img
-              src="/logo.png"
-              alt="Estilo-co"
-              className="h-20 md:h-28 w-auto object-contain transition-transform group-hover:scale-105"
-            />
-          </Link>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 -ml-2 text-gray-400 hover:text-black md:hidden"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <Link to="/" className="flex items-center group py-2">
+              <img
+                src="/logo.png"
+                alt="Estilo-co"
+                className="h-20 md:h-28 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+            </Link>
+          </div>
 
           <div className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
@@ -163,6 +172,90 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-80 bg-white z-[120] p-8 shadow-2xl flex flex-col"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <img src="/logo.png" alt="Logo" className="h-12 w-auto" />
+                <button onClick={() => setIsMenuOpen(false)} className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
+                  <X className="h-5 w-5 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="space-y-6 flex-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`block text-lg font-black uppercase tracking-tighter ${location.pathname === link.path ? 'text-blue-600' : 'text-gray-400 hover:text-black'}`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+
+                {user?.role === 'ADMIN' && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 text-lg font-black uppercase tracking-tighter text-blue-600 border-t border-gray-100 pt-6"
+                  >
+                    <LayoutDashboard className="h-5 w-5" /> {t('nav.admin')}
+                  </Link>
+                )}
+              </div>
+
+              <div className="mt-auto border-t border-gray-100 pt-8 space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="bg-blue-50 p-3 rounded-2xl">
+                    <Globe className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Language</p>
+                    <div className="flex gap-4">
+                      {languages.map(lang => (
+                        <button
+                          key={lang.code}
+                          onClick={() => changeLanguage(lang.code)}
+                          className={`text-sm font-bold ${i18n.language.startsWith(lang.code) ? 'text-blue-600 underline' : 'text-gray-400'}`}
+                        >
+                          {lang.name.split(' ')[0]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {user ? (
+                   <button onClick={handleLogout} className="flex items-center gap-3 w-full bg-red-50 text-red-600 p-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-red-100 transition-colors">
+                      <LogOut className="h-4 w-4" /> Logout Account
+                   </button>
+                ) : (
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 w-full bg-black text-white p-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors justify-center">
+                    <User className="h-4 w-4" /> Login / Register
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
