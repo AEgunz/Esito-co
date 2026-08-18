@@ -95,6 +95,16 @@ const AdminOrders = () => {
     }
   };
 
+  const handleManualSync = async () => {
+      try {
+          await api.post('/admin/db-sync');
+          alert('Database Synced! Refreshing...');
+          window.location.reload();
+      } catch (err) {
+          alert('Sync failed. Please check Railway logs.');
+      }
+  };
+
   if (isLoading) return (
     <div className="p-20 text-center flex flex-col items-center justify-center gap-4">
         <RefreshCw className="h-10 w-10 animate-spin text-blue-600" />
@@ -128,16 +138,20 @@ const AdminOrders = () => {
       {isError && (
           <div className="p-10 bg-red-50 text-red-600 rounded-[40px] border-4 border-red-100 flex flex-col items-center gap-6 text-center">
               <AlertCircle className="h-20 w-20" />
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black uppercase italic">Critical Database Error</h2>
-                <p className="font-bold text-lg">Your database is out of sync with the latest updates.</p>
-                <div className="bg-white/50 p-6 rounded-3xl mt-4 space-y-4">
-                    <p className="text-sm font-medium">To fix this, please go to your <b>Railway Dashboard</b>, open the <b>Terminal</b> of your server, and run:</p>
-                    <code className="block bg-black text-green-400 p-4 rounded-xl font-mono text-sm">npx prisma db push</code>
-                </div>
-                <p className="text-[10px] uppercase font-black opacity-50 mt-6">
+              <div className="space-y-4">
+                <h2 className="text-3xl font-black uppercase italic">Critical Sync Error</h2>
+                <p className="font-bold text-lg max-w-md">Your database is missing some new tables needed for the latest features.</p>
+
+                <button
+                    onClick={handleManualSync}
+                    className="bg-black text-white px-10 py-5 rounded-[28px] font-black uppercase tracking-widest hover:bg-blue-600 transition shadow-2xl"
+                >
+                    Run Database Repair
+                </button>
+
+                <p className="text-[10px] uppercase font-black opacity-50 pt-4">
                     {/* @ts-ignore */}
-                    Technical Error: {error?.response?.data?.error || error?.message || 'Server 500'}
+                    Reason: {error?.response?.data?.error || error?.message || 'DB Sync Required'}
                 </p>
               </div>
           </div>

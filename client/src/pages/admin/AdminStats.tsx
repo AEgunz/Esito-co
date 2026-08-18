@@ -25,12 +25,28 @@ const AdminStats = () => {
 
   if (isLoading) return <div className="p-20 text-center animate-pulse font-bold text-gray-300 uppercase tracking-widest">Calculating Stats...</div>;
 
+  const handleManualSync = async () => {
+      try {
+          await api.post('/admin/db-sync');
+          alert('Database Synced! Refreshing...');
+          window.location.reload();
+      } catch (err) {
+          alert('Sync failed. Please check Railway logs.');
+      }
+  };
+
   if (isError) return (
       <div className="p-20 text-center space-y-6">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto" />
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h2 className="text-2xl font-black uppercase italic">Dashboard Sync Error</h2>
-            <p className="text-gray-500 max-w-md mx-auto">Database tables are missing. Please run <b>npx prisma db push</b> in Railway Terminal to fix this.</p>
+            <p className="text-gray-500 max-w-md mx-auto text-sm font-medium">Database tables are missing after the update. Click the button below to fix this automatically.</p>
+            <button
+                onClick={handleManualSync}
+                className="bg-black text-white px-10 py-4 rounded-[24px] font-black text-xs uppercase tracking-widest hover:bg-blue-600 transition shadow-xl"
+            >
+                Repair Database Now
+            </button>
           </div>
       </div>
   );

@@ -19,6 +19,7 @@ import ameexRoutes from './routes/ameexRoutes';
 import couponRoutes from './routes/couponRoutes';
 import inquiryRoutes from './routes/inquiryRoutes';
 import financeRoutes from './routes/financeRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/ameex', ameexRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('Estilo-co API is running v2');
