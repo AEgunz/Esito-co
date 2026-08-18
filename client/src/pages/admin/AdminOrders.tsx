@@ -14,11 +14,16 @@ const AdminOrders = () => {
   const [filter, setFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: orders, isLoading, isError, refetch } = useQuery({
+  const { data: orders, isLoading, isError, refetch, error } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
-        const res = await api.get('/orders/all');
-        return Array.isArray(res.data) ? res.data : [];
+        try {
+            const res = await api.get('/orders/all');
+            return Array.isArray(res.data) ? res.data : [];
+        } catch (err: any) {
+            console.error('Fetch Orders Error:', err);
+            throw err;
+        }
     }
   });
 
@@ -123,7 +128,13 @@ const AdminOrders = () => {
       {isError && (
           <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center gap-4">
               <AlertCircle className="h-6 w-6" />
-              <p className="font-bold text-start">Error loading orders. Please check your connection or login again.</p>
+              <div className="text-start">
+                <p className="font-bold">Error loading orders.</p>
+                <p className="text-[10px] uppercase font-black opacity-70">
+                    {/* @ts-ignore */}
+                    Reason: {error?.response?.data?.message || error?.message || 'Database mismatch or Server Error'}
+                </p>
+              </div>
           </div>
       )}
 
