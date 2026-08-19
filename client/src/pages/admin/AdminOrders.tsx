@@ -100,10 +100,17 @@ const AdminOrders = () => {
           await api.post('/admin/db-sync');
           alert('Database Synced! Refreshing...');
           window.location.reload();
-      } catch (err) {
-          alert('Sync failed. Please check Railway logs.');
+      } catch (err: any) {
+          if (err.response?.status === 401) {
+              alert('Session expired. Please login again.');
+              navigate('/login');
+          } else {
+              alert('Sync failed. Please check Railway logs.');
+          }
       }
   };
+
+  const isAuthError = (error as any)?.response?.status === 401;
 
   if (isLoading) return (
     <div className="p-20 text-center flex flex-col items-center justify-center gap-4">
@@ -139,15 +146,28 @@ const AdminOrders = () => {
           <div className="p-10 bg-red-50 text-red-600 rounded-[40px] border-4 border-red-100 flex flex-col items-center gap-6 text-center">
               <AlertCircle className="h-20 w-20" />
               <div className="space-y-4">
-                <h2 className="text-3xl font-black uppercase italic">Critical Sync Error</h2>
-                <p className="font-bold text-lg max-w-md">Your database is missing some new tables needed for the latest features.</p>
+                <h2 className="text-3xl font-black uppercase italic">{isAuthError ? 'Session Expired' : 'Critical Sync Error'}</h2>
+                <p className="font-bold text-lg max-w-md">
+                    {isAuthError
+                        ? 'Your login session has expired for security reasons.'
+                        : 'Your database is missing some new tables needed for the latest features.'}
+                </p>
 
-                <button
-                    onClick={handleManualSync}
-                    className="bg-black text-white px-10 py-5 rounded-[28px] font-black uppercase tracking-widest hover:bg-blue-600 transition shadow-2xl"
-                >
-                    Run Database Repair
-                </button>
+                {isAuthError ? (
+                    <button
+                        onClick={() => navigate('/login')}
+                        className="bg-black text-white px-10 py-5 rounded-[28px] font-black uppercase tracking-widest hover:bg-blue-600 transition shadow-2xl"
+                    >
+                        Login Again
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleManualSync}
+                        className="bg-black text-white px-10 py-5 rounded-[28px] font-black uppercase tracking-widest hover:bg-blue-600 transition shadow-2xl"
+                    >
+                        Run Database Repair
+                    </button>
+                )}
 
                 <p className="text-[10px] uppercase font-black opacity-50 pt-4">
                     {/* @ts-ignore */}
