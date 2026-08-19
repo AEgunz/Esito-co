@@ -56,10 +56,10 @@ const AdminFinances = () => {
         <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-4">
             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-100/50"><TrendingUp className="h-6 w-6" /></div>
             <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Income</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Net Income (Products)</p>
                 <div className="flex items-baseline gap-2">
                     <p className="text-3xl font-black text-gray-900">{Number(summary?.totalIncome || 0).toFixed(0)} DH</p>
-                    <span className="text-[9px] font-bold text-gray-400">({summary?.ordersIncome} Orders + {summary?.totalManualIncome} Manual)</span>
+                    <span className="text-[9px] font-bold text-gray-400">({summary?.ordersIncome} Web + {summary?.totalManualIncome} Manual)</span>
                 </div>
             </div>
         </div>
@@ -180,10 +180,10 @@ const AdminFinances = () => {
                           {/* Orders Income (Auto-calculated) */}
                           <tr className="bg-blue-50/10">
                               <td className="px-8 py-6">
-                                  <p className="font-black text-gray-900 flex items-center gap-2"><ShoppingBag className="h-3.5 w-3.5 text-blue-500" /> Website Orders</p>
-                                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Automatic</p>
+                                  <p className="font-black text-gray-900 flex items-center gap-2"><ShoppingBag className="h-3.5 w-3.5 text-blue-500" /> Website Orders (Net)</p>
+                                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Excl. Shipping Fees</p>
                               </td>
-                              <td className="px-8 py-6"><p className="text-xs font-bold text-gray-400">Continuous</p></td>
+                              <td className="px-8 py-6"><p className="text-xs font-bold text-gray-400">All Time</p></td>
                               <td className="px-8 py-6 text-right"><p className="font-black text-emerald-500">+{Number(summary?.ordersIncome).toFixed(0)} DH</p></td>
                               <td className="px-8 py-6"></td>
                           </tr>

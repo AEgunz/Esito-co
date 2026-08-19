@@ -7,7 +7,12 @@ export const getFinancialSummary = async (req: Request, res: Response) => {
     const orders = await prisma.order.findMany({
       where: { NOT: { status: 'CANCELLED' } }
     });
-    const ordersIncome = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
+
+    // Subtract deliveryFee from totalAmount because it's not part of the profit
+    const ordersIncome = orders.reduce((sum, o) => {
+      const netAmount = Number(o.totalAmount) - Number(o.deliveryFee || 0);
+      return sum + netAmount;
+    }, 0);
 
     // 2. Get Manual Incomes
     const manualIncomes = await prisma.manualIncome.findMany({
